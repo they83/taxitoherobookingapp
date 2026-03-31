@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Ngrok Run" type="ngrok-deploy" factoryName="Ngrok" server-name="Ngrok">
+    <deployment type="Ngrok">
+      <settings />
+    </deployment>
+    <method v="2" />
+  </configuration>
+</component>
