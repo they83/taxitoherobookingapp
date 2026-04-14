@@ -9,7 +9,6 @@ module.exports = {
     PHONE_NUMBER_ID: process.env.PHONE_NUMBER_ID,
     WHATSAPP_API_URL: `https://graph.facebook.com/v25.0/${process.env.PHONE_NUMBER_ID}/messages`,
 
-
     // Google Maps API Credentials
     GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY,
     GOOGLE_MAPS_API_URL_VALIDATE: `https://addressvalidation.googleapis.com/v1:validateAddress?key=${process.env.GOOGLE_MAPS_API_KEY}`,
@@ -34,6 +33,5 @@ module.exports = {
     // MPESA_SHORTCODE: process.env.MPESA_SHORTCODE,
     // MPESA_PASSKEY: process.env.MPESA_PASSKEY,
     // MPESA_CALLBACK_URL: process.env.MPESA_CALLBACK_URL,
-
 
 };

@@ -148,23 +148,6 @@ CREATE TRIGGER update_customers_updated_at
     FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
--- Insert sample customer data
-INSERT INTO customers (phone_number, name, preferred_location, total_bookings)
-VALUES ('+254712000001', 'John Kamau', 'Nairobi', 0),
-       ('+254712000002', 'Mary Wanjiku', 'Mombasa', 0),
-       ('+254712000003', 'Peter Otieno', 'Kisumu', 0);
-
-CREATE VIEW booking_summary AS
-SELECT b.id,
-       b.booking_reference,
-       b.phone_number,
-       b.date,
-       b.passengers,
-       b.status,
-       b.mpesa_transaction_id,
-       b.created_at
-FROM bookings b
-ORDER BY b.created_at DESC;
 
 -- Grant necessary permissions (adjust username as needed)
 -- GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO your_app_user;
