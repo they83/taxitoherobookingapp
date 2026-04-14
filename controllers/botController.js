@@ -26,7 +26,6 @@ async function processMessage(phoneNumber, messageText, conversation, buttonRepl
     const context = JSON.parse(JSON.stringify(conversation.context || {}));
 
     console.log(`Processing message for ${phoneNumber} in state: ${state} with message: "${messageText}" and button reply ${buttonReply}`);
-    console.log(`Is admin prompt: ${isAdminPrompt}`);
 
     // Delegate to specific handlers based on the current state
     // Each handler will manage its own state transitions and context updates
