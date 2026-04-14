@@ -80,7 +80,7 @@ Vous pouvez toujours envoyer 0 pour revenir à l'étape précédente.`,
     csFrench:
 `💬 Vous êtes mis en relation avec le service client... Veuillez patienter..`,
     incorrectSelectionMessageFrench:
-`Étape de sélection invalide. Veuillez recommencer..`,
+`Étape de sélection invalide. Veuillez recommencer.`,
     arrivalMessageDutch:
 `Bedankt om een taxi vanuit de luchthaven in Zaventem te boeken. Gelieve het adres mee te delen.
 
@@ -92,10 +92,7 @@ U kan altijd 0 gebruiken om naar de laatste step terug te keren.`,
     csDutch:
 `💬 U wordt verbonden met onze customer service... Gelieve geduld te hebben..`,
     incorrectSelectionMessageDutch:
-`Foutieve stap in de selectie. Start aub opnieuw.
-1. Aankomst (vanaf luchthaven Zaventem)
-2. Vertrek (naar luchthaven Zaventem)
-3. 💬 Spreek met customer service`,
+`Foutieve stap in de selectie. Start aub opnieuw.`,
     bookingDetailsEnglish:
 `Please provide the following information:
 
@@ -214,6 +211,8 @@ You can also go straight to these options with the text pendingbookings, booking
 with the correct booking reference and without the quotes.`,
     adminBookingConfirmedMessage:
 `This booking has been confirmed. The client has been notified.`,
+    adminBookingConfirmedSilentMessage:
+`This booking has been confirmed. The client has NOT been notified.`,
     adminNoBookingFoundMessage:
 `This booking is not found. Please check the reference.`,
     adminCompleteMessage:
@@ -225,7 +224,13 @@ with the correct id and without the quotes.`,
     adminCsUpdatedMessage:
 `The CS conversation has been updated successfully.`,
     adminNoResultsMessage:
-`No results found.`
+`No results found.`,
+    adminBookingDeletedMessage:
+`This booking has been deleted.`,
+    adminCsDeletedMessage:
+`The CS conversation has been deleted successfully.`,
+    adminMailMessage:
+`The conversations and bookings tables will be emailed.`
 }
 
 

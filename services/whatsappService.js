@@ -30,7 +30,7 @@ async function sendInteractiveMessageWithImage_3ReplyButtons(phoneNumber, messag
             messaging_product: 'whatsapp', to: phoneNumber, type: 'interactive', interactive: {
                 type: 'button', header: {
                     type: 'image', image: {
-                        id: '778808051560594'
+                        id: '1000756592279034'
                     }
                 }, body: {
                     text: message
@@ -197,6 +197,7 @@ async function sendInteractiveMessageWith1CTAButton(phoneNumber, message, button
     }
 }
 
+// never used
 async function sendInteractiveMessageWithList(phoneNumber) {
     try {
         const response = await axios.post(config.WHATSAPP_API_URL, {
@@ -289,27 +290,21 @@ async function sendFlowEnglish(phoneNumber) {
                     text: 'Book your taxi'
                 }, body: {
 //                    text: 'Body text - Not shown in draft mode'
-                    text: 'Enter your remaining booking details in the next screens'
-                }, footer: {
-//                    text: 'Footer text - Not shown in draft mode'
-                    text: 'Submit your booking details'
+                    text: 'Enter the remaining booking details in the next screens'
+//                 }, footer: {
+// //                    text: 'Footer text - Not shown in draft mode'
+//                     text: 'Submit your booking details'
                 }, action: {
                     name: 'flow', parameters: {
                         flow_message_version: '3',
                         flow_action: 'navigate',
-//                        flow_token: '<FLOW_TOKEN>',
                         flow_token: 'flowBookingDetailsEnglish',
-// flow ID van test account
-                        flow_id: 4370993453226332,
-// flow ID van echte account
-//                        flow_id: 887400394385913,
+                        flow_id: process.env.FLOW_ID_ENGLISH,
 //                        flow_cta: 'CTA button text - Not shown in draft mode',
                         flow_cta: 'Enter booking details',
-                        mode: 'draft',
-//                        mode: 'published',
+                        mode: process.env.FLOW_MODE,
                         flow_action_payload: {
                             screen: 'ONE', data: {
-//                                "<CUSTOM_KEY>": "<CUSTOM_VALUE>"
                                 "<CUSTOM_KEY>": "screenOne"
                             }
                         }
@@ -339,30 +334,24 @@ async function sendFlowFrench(phoneNumber) {
                 type: 'flow', header: {
                     type: 'text',
 //                    text: 'Header text - Not shown in draft mode'
-                    text: 'Reservez un taxi'
+                    text: 'Reservez votre taxi'
                 }, body: {
 //                    text: 'Body text - Not shown in draft mode'
                     text: 'Entrez les détails restants de votre réservation dans les écrans suivants'
-                }, footer: {
-//                    text: 'Footer text - Not shown in draft mode'
-                    text: 'Soumettre les détails de votre réservation'
+//                 }, footer: {
+// //                    text: 'Footer text - Not shown in draft mode'
+//                     text: 'Soumettre les détails de votre réservation'
                 }, action: {
                     name: 'flow', parameters: {
                         flow_message_version: '3',
                         flow_action: 'navigate',
-//                        flow_token: '<FLOW_TOKEN>',
                         flow_token: 'flowBookingDetailsFrench',
-// flow ID van test account
-                        flow_id: 2686488961749887,
-// flow ID van echte account
-//                        flow_id: 1615232906346605,
+                        flow_id: process.env.FLOW_ID_FRENCH,
 //                        flow_cta: 'CTA button text - Not shown in draft mode',
                         flow_cta: 'Entrez les détails de la réservation',
-                        mode: 'draft',
-//                        mode: 'published',
+                        mode: process.env.FLOW_MODE,
                         flow_action_payload: {
                             screen: 'ONE', data: {
-//                                "<CUSTOM_KEY>": "<CUSTOM_VALUE>"
                                 "<CUSTOM_KEY>": "screenOne"
                             }
                         }
@@ -396,26 +385,20 @@ async function sendFlowDutch(phoneNumber) {
                 }, body: {
 //                    text: 'Body text - Not shown in draft mode'
                     text: 'Vul de resterende boeking details in via de volgende schermen'
-                }, footer: {
-//                    text: 'Footer text - Not shown in draft mode'
-                    text: 'Dien je boeking details in'
+//                 }, footer: {
+// //                    text: 'Footer text - Not shown in draft mode'
+//                     text: 'Dien je boeking details in'
                 }, action: {
                     name: 'flow', parameters: {
                         flow_message_version: '3',
                         flow_action: 'navigate',
-//                        flow_token: '<FLOW_TOKEN>',
                         flow_token: 'flowBookingDetailsDutch',
-// flow ID van test account
-                        flow_id: 860859213645292,
-// flow ID van echte account
-//                        flow_id: 4303059503294231,
+                        flow_id: process.env.FLOW_ID_DUTCH,
 //                        flow_cta: 'CTA button text - Not shown in draft mode',
                         flow_cta: 'Dien boeking details in',
-                        mode: 'draft',
-//                        mode: 'published',
+                        mode: process.env.FLOW_MODE,
                         flow_action_payload: {
                             screen: 'ONE', data: {
-//                                "<CUSTOM_KEY>": "<CUSTOM_VALUE>"
                                 "<CUSTOM_KEY>": "screenOne"
                             }
                         }

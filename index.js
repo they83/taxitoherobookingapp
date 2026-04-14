@@ -1,17 +1,10 @@
 const express = require('express');
-const axios = require('axios');
-const crypto = require('crypto');
 const settings = require('./config/vars'); // Import application settings
 const { connectDB } = require('./config/db'); // Import the async connectDB function
 const mainRouter = require('./routes'); // Import the main router from routes/index.js
 const livereload = require('livereload'); // Import livereload for development convenience
 const connectLiveReload = require('connect-livereload'); // Middleware for live reloading
-const dateUtils = require('./utils/dateUtils');
-const googleMaps = require('./services/googleMapsService');
 const { errorHandler, AppError } = require('./middleware/errorHandler');
-const verifyAddress = require("./services/googleMapsService");
-const whatsappService = require("./services/whatsappService");
-const {messageTexts} = require("./config/messageTexts");
 const {scheduledJob} = require("./models/scheduledJobs");
 const {sendTestMail} = require("./services/nodemailer");
 const {sendSummary} = require("./services/nodemailer");
@@ -49,7 +42,7 @@ async function startServer() {
 
         // Basic root route
         app.get('/', (req, res) => {
-            res.send('Welcome to the your WhatsApp Taxi Booking System API!');
+            res.send('Welcome to the Taxi Tohero Booking API!');
         });
 
         // --- Global Error Handling Middleware (Optional) ---
@@ -70,7 +63,6 @@ async function startServer() {
 // Call the async function to start the server
 startServer();
 
-scheduledJob();
-
+// scheduledJob();
 // sendTestMail();
 // sendSummary();

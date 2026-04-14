@@ -98,7 +98,7 @@ async function addBookingRefToConversation(phoneNumber, bookingRef) {
 async function getAllCS() {
     const pool = getPool();
     const client = await pool.connect();
-    const sqlstring = "select * from conversations where current_state in ('cs', 'chose_stop')";
+    const sqlstring = "select * from conversations where current_state in ('cs')";
     const {rows} = await client.query(sqlstring);
     client.release();
     return rows || null; // Returns all rows or null if no record found
@@ -118,6 +118,19 @@ async function getAllIncomplete() {
     return rows || null; // Returns all rows or null if no record found
 }
 
+/**
+ * Gets all conversations with context CS.
+ * @returns {Object|null} The conversation object if found, otherwise null.
+ */
+async function getAllConversations() {
+    const pool = getPool();
+    const client = await pool.connect();
+    const sqlstring = "select * from conversations";
+    const {rows} = await client.query(sqlstring);
+    client.release();
+    return rows || null; // Returns all rows or null if no record found
+}
+
 
 /**
  * Updates a CS conversation in the database.
@@ -127,6 +140,18 @@ async function completeCsConversation(id) {
     const pool = getPool();
     const client = await pool.connect();
     const sqlstring = "update conversations set current_state = 'completed' where id = $1";
+    await client.query(sqlstring, [id]);
+    client.release();
+}
+
+/**
+ * Deletes a CS conversation in the database.
+ * @param {string} id - The conversation ID.
+ */
+async function deleteCsConversation(id) {
+    const pool = getPool();
+    const client = await pool.connect();
+    const sqlstring = "delete from conversations where id = $1";
     await client.query(sqlstring, [id]);
     client.release();
 }
@@ -164,6 +189,8 @@ module.exports = {
     addBookingRefToConversation,
     getAllCS,
     getAllIncomplete,
+    getAllConversations,
     completeCsConversation,
+    deleteCsConversation,
     getPrice
 };

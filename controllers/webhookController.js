@@ -73,7 +73,6 @@ async function handleIncomingMessage(message) {
     const flowReply = message.interactive?.nfm_reply?.response_json || '';
 
     // Only process text (and interactive) messages for now. Other types (image, video, etc.) are ignored.
-    // TODO: Handle other message types in the future.
     if (messageType !== 'text' && messageType !== 'interactive') {
         let conversation = await conversationModel.getConversation(phoneNumber);
         const language = conversation.context.language
@@ -99,8 +98,8 @@ async function handleIncomingMessage(message) {
         // Get the current conversation state for the user's phone number
         let conversation = await conversationModel.getConversation(phoneNumber);
         const isAdmin = constants.admins.includes(phoneNumber)
-        const adminTexts = ['admin', 'allbookings', '1. Bookings', 'allcs', '2. Context CS', 'incomplete', '3. Incomplete status', 'pendingbookings', '1. Bookings pending', 'bookingstoday', '2. Confirmed today', 'bookingsfuture', '3. Confirmed future'];
-        const isAdminText = (adminTexts.includes(messageText) || adminTexts.includes(buttonReply) || messageText.includes('confirm:') || messageText.includes('complete:'));
+        const adminTexts = ['admin', 'allbookings', '1. Bookings', 'allcs', '2. Context CS', 'incomplete', '3. Incomplete status', 'pendingbookings', '1. Bookings pending', 'bookingstoday', '2. Confirmed today', 'bookingsfuture', '3. Confirmed future', 'mailtables'];
+        const isAdminText = (adminTexts.includes(messageText) || adminTexts.includes(buttonReply) || messageText.includes('confirm:') || messageText.includes('complete:') || messageText.includes('deleteB:') || messageText.includes('deleteC:') || messageText.includes('update:'));
         const isAdminPrompt = isAdmin && isAdminText;
 
         // If no conversation exists, create a new one, unless it is an admin prompt

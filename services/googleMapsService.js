@@ -17,7 +17,6 @@ async function verifyAddress(address) {
             }
         });
 
-//        console.log('Address verified successfully:', response.data);
         const formattedAddress = response.data.result.address.formattedAddress
         const verdict = response.data.result.verdict.addressComplete
         return {formattedAddress, verdict};
@@ -132,7 +131,6 @@ async function getDistanceFromAirport(address) {
         const distance = response.data.routes[0].distanceMeters
         const duration = response.data.routes[0].duration.replace('s', '')
         return {distance, duration};
-//        return JSON.stringify(response.data.result.address.formattedAddress);
     } catch (error) {
         // Log detailed error information, especially from Axios response
         console.error('Error sending message:', error.response?.data || error.message);

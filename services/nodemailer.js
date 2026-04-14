@@ -1,63 +1,9 @@
-const { google } = require("googleapis");
 const {createTransport} = require("nodemailer");
 const {getBookingsAdmin, getBookingsToday, getBookingsFuture} = require("../models/bookingModel");
 const {getAllCS, getAllIncomplete} = require("../models/conversationModel");
-const OAuth2 = google.auth.OAuth2;
 
-// doesn't work anymore (token issue), using app password instead
-// const createTransporter = async () => {
-//     try {
-//         const oauth2Client = new OAuth2(
-//             process.env.GOOGLE_CLIENT_ID,
-//             process.env.GOOGLE_CLIENT_SECRET,
-//             "https://developers.google.com/oauthplayground"
-//         );
-//
-//         oauth2Client.setCredentials({
-//             refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
-//         });
-//
-//         const accessToken = await new Promise((resolve, reject) => {
-//             oauth2Client.getAccessToken((err, token) => {
-//                 if (err) {
-//                     console.log("*ERR: ", err)
-//                     reject();
-//                 }
-//                 resolve(token);
-//             });
-//         });
-//
-//         return createTransport({
-//             service: "gmail",
-//             auth: {
-//                 type: "OAuth2",
-//                 user: process.env.GOOGLE_USER_EMAIL,
-//                 accessToken,
-//                 clientId: process.env.GOOGLE_CLIENT_ID,
-//                 clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-//                 refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
-//             },
-//         });
-//     } catch (err) {
-//         return err
-//     }
-// };
 
-// const sendTestMail = async () => {
-//     try {
-//         const mailOptions = {
-//             from: process.env.GOOGLE_USER_EMAIL,
-//             to: 'they83@yahoo.com',
-//             subject: "Test",
-//             text: "Hi, this is a test email",
-//         }
-//         let emailTransporter = await createTransporter();
-//         await emailTransporter.sendMail(mailOptions);
-//     } catch (err) {
-//         console.log("ERROR: ", err)
-//     }
-// };
-
+// only used in scheduledjobs, using prompt via admintext instead
 const sendSummary = async () => {
     const pendingBookings = await getBookingsAdmin();
     const nrOfPendingBookings = pendingBookings.length;
@@ -122,8 +68,55 @@ ${incompleteConversationsText}
             subject: "Test",
             text: scheduledMessage,
         }
-        // let emailTransporter = await createTransporter();
-        // await emailTransporter.sendMail(mailOptions);
+        await transporter.sendMail(mailOptions);
+    } catch (err) {
+        console.log("ERROR: ", err)
+    }
+}
+
+async function sendBookingToAdmin(booking){
+
+    console.log("booking voor mail: ",JSON.stringify(booking));
+    bookingText = `Booking reference: ${booking.booking_reference}
+To/from: ${booking.selected_option}
+Language: ${booking.language}
+Date: ${booking.date}
+Time: ${booking.time}
+Phone nr: ${booking.phone_number}
+Alternative phone nr: ${booking.alternative_phone_number}
+Name: ${booking.customer_name}
+Passengers: ${booking.passengers}
+Status: ${booking.status}
+Extra info: ${booking.extra_info}
+Address: ${booking.address}
+Price: ${booking.price}
+Distance to airport (in meters): ${booking.distance_to_airport}
+Distance from airport (in meters): ${booking.distance_from_airport}
+Duration to airport (in seconds): ${booking.duration_to_airport}
+Duration from airport (in seconds): ${booking.duration_from_airport}
+Flight nr: ${booking.flight_nr}
+Luggage: ${booking.luggage}
+
+To confirm a booking send (only as an admin):
+confirm: "booking reference"
+with the correct booking reference and without the quotes to the whatsapp nr.
+That way the client can be asked to rebook this trip (same or reversed) next time they contact the bot.`;
+
+    // Create a transporter object
+    const transporter = createTransport({
+        service: "gmail",
+        auth: {
+            user: process.env.GOOGLE_USER_EMAIL,
+            pass: process.env.GOOGLE_NODEMAILER_APP_PASSWORD
+        }
+    });
+    try {
+        const mailOptions = {
+            from: process.env.GOOGLE_USER_EMAIL,
+            to: process.env.GOOGLE_LIST_EMAIL,
+            subject: "New booking",
+            text: bookingText,
+        }
         await transporter.sendMail(mailOptions);
     } catch (err) {
         console.log("ERROR: ", err)
@@ -131,8 +124,203 @@ ${incompleteConversationsText}
 }
 
 
+async function sendUpdatedBookingToAdmin(booking){
+
+    console.log("booking voor mail: ",JSON.stringify(booking));
+    bookingText = `Booking reference: ${booking.booking_reference}
+To/from: ${booking.selected_option}
+Language: ${booking.language}
+Date: ${booking.date}
+Time: ${booking.time}
+Phone nr: ${booking.phone_number}
+Alternative phone nr: ${booking.alternative_phone_number}
+Name: ${booking.customer_name}
+Passengers: ${booking.passengers}
+Status: ${booking.status}
+Extra info: ${booking.extra_info}
+Address: ${booking.address}
+Price: ${booking.price}
+Distance to airport (in meters): ${booking.distance_to_airport}
+Distance from airport (in meters): ${booking.distance_from_airport}
+Duration to airport (in seconds): ${booking.duration_to_airport}
+Duration from airport (in seconds): ${booking.duration_from_airport}
+Flight nr: ${booking.flight_nr}
+Luggage: ${booking.luggage}
+
+To confirm a booking send (only as an admin):
+confirm: "booking reference"
+with the correct booking reference and without the quotes to the whatsapp nr.
+That way the client can be asked to rebook this trip (same or reversed) next time they contact the bot.`;
+
+    // Create a transporter object
+    const transporter = createTransport({
+        service: "gmail",
+        auth: {
+            user: process.env.GOOGLE_USER_EMAIL,
+            pass: process.env.GOOGLE_NODEMAILER_APP_PASSWORD
+        }
+    });
+    try {
+        const mailOptions = {
+            from: process.env.GOOGLE_USER_EMAIL,
+            to: process.env.GOOGLE_LIST_EMAIL,
+            subject: "Updated booking",
+            text: bookingText,
+        }
+        await transporter.sendMail(mailOptions);
+    } catch (err) {
+        console.log("ERROR: ", err)
+    }
+}
+
+async function sendCanceledBookingToAdmin(booking){
+
+    console.log("booking voor mail: ",JSON.stringify(booking));
+    bookingText = `Booking reference: ${booking.booking_reference}
+To/from: ${booking.selected_option}
+Language: ${booking.language}
+Date: ${booking.date}
+Time: ${booking.time}
+Phone nr: ${booking.phone_number}
+Alternative phone nr: ${booking.alternative_phone_number}
+Name: ${booking.customer_name}
+Passengers: ${booking.passengers}
+Status: ${booking.status}
+Extra info: ${booking.extra_info}
+Address: ${booking.address}
+Price: ${booking.price}
+Distance to airport (in meters): ${booking.distance_to_airport}
+Distance from airport (in meters): ${booking.distance_from_airport}
+Duration to airport (in seconds): ${booking.duration_to_airport}
+Duration from airport (in seconds): ${booking.duration_from_airport}
+Flight nr: ${booking.flight_nr}
+Luggage: ${booking.luggage}`;
+
+    // Create a transporter object
+    const transporter = createTransport({
+        service: "gmail",
+        auth: {
+            user: process.env.GOOGLE_USER_EMAIL,
+            pass: process.env.GOOGLE_NODEMAILER_APP_PASSWORD
+        }
+    });
+    try {
+        const mailOptions = {
+            from: process.env.GOOGLE_USER_EMAIL,
+            to: process.env.GOOGLE_LIST_EMAIL,
+            subject: "Canceled booking",
+            text: bookingText,
+        }
+        await transporter.sendMail(mailOptions);
+    } catch (err) {
+        console.log("ERROR: ", err)
+    }
+}
+
+
+async function sendCSToAdmin(phoneNr, language){
+
+    cstext = `${phoneNr} just chose the option CS (language = ${language})`;
+
+    // Create a transporter object
+    const transporter = createTransport({
+        service: "gmail",
+        auth: {
+            user: process.env.GOOGLE_USER_EMAIL,
+            pass: process.env.GOOGLE_NODEMAILER_APP_PASSWORD
+        }
+    });
+    try {
+        const mailOptions = {
+            from: process.env.GOOGLE_USER_EMAIL,
+            to: process.env.GOOGLE_LIST_EMAIL,
+            subject: "New CS request",
+            text: cstext,
+        }
+        await transporter.sendMail(mailOptions);
+    } catch (err) {
+        console.log("ERROR: ", err)
+    }
+}
+
+async function sendStopToAdmin(phoneNr, context){
+
+    console.log("context voor mail: ",JSON.stringify(context));
+    cstext = `A booking was stopped after receiving the price. Details:
+    Phone nr: ${phoneNr}
+    Language: ${context.language}
+    Price: ${context.price}
+    Address: ${context.address}
+    Selected option: ${context.selectedOption}
+    Distance to (in meters): ${context.distanceToAirport}
+    Distance from (in meters): ${context.distanceFromAirport}
+    Duration to (in seconds): ${context.durationToAirport}
+    Duration from (in seconds): ${context.durationFromAirport}`;
+
+    // Create a transporter object
+    const transporter = createTransport({
+        service: "gmail",
+        auth: {
+            user: process.env.GOOGLE_USER_EMAIL,
+            pass: process.env.GOOGLE_NODEMAILER_APP_PASSWORD
+        }
+    });
+    try {
+        const mailOptions = {
+            from: process.env.GOOGLE_USER_EMAIL,
+            to: process.env.GOOGLE_LIST_EMAIL,
+            subject: "Booking process stopped",
+            text: cstext,
+        }
+        await transporter.sendMail(mailOptions);
+    } catch (err) {
+        console.log("ERROR: ", err)
+    }
+}
+
+async function mailToAdmin(bookings, conversations){
+    allBookingsText = "";
+    bookings.forEach((booking) => {allBookingsText = allBookingsText + JSON.stringify(booking) + "\n\n"
+    });
+    allConversationsText = "";
+    conversations.forEach((conversation) => {allConversationsText = allConversationsText + JSON.stringify(conversation) + "\n\n"
+    });
+
+    const emailMessage = `Bookings: 
+${allBookingsText}
+
+Conversations: 
+${allConversationsText}
+
+`;
+
+    // Create a transporter object
+    const transporter = createTransport({
+        service: "gmail",
+        auth: {
+            user: process.env.GOOGLE_USER_EMAIL,
+            pass: process.env.GOOGLE_NODEMAILER_APP_PASSWORD
+        }
+    });
+    try {
+        const mailOptions = {
+            from: process.env.GOOGLE_USER_EMAIL,
+            to: process.env.GOOGLE_LIST_EMAIL,
+            subject: "Admin export bookings and conversations",
+            text: emailMessage,
+        }
+        await transporter.sendMail(mailOptions);
+    } catch (err) {
+        console.log("ERROR: ", err)
+    }
+}
+
 module.exports = {
-    // createTransporter,
-    // sendTestMail,
-    sendSummary
+    sendSummary,
+    sendBookingToAdmin,
+    sendUpdatedBookingToAdmin,
+    sendCanceledBookingToAdmin,
+    sendCSToAdmin,
+    sendStopToAdmin,
+    mailToAdmin
 };

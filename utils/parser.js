@@ -1,7 +1,4 @@
-// Utility for Parsing User Input
-
 const {check24h} = require("./dateUtils");
-const {json} = require("express");
 
 /**
  * Parses booking details from a WhatsApp message.
@@ -37,9 +34,6 @@ function parseBookingDetails(message, interactiveType, flowReply) {
             details.luggage = JSON.parse(flowReply).screen_2_Luggage_0;
             details.info = JSON.parse(flowReply).screen_2_Extra_info_1;
             if (details.date && details.time && check24h(details.date, details.time) && !isNaN(details.passengers) && details.passengers > 0 && details.passengers < 9 && details.name) {
-                // TODO: Add further validation for date/time formats
-                // Check date format validation (e.g., regex for DD/MM/YYYY) or date validity
-                // (e.g., check-in before check-out).
                 details.valid = true;
             }
         } catch (error) {
@@ -74,9 +68,6 @@ function parseBookingDetails(message, interactiveType, flowReply) {
 
             // Basic validation: ensure all required fields are present, passengers is a valid number between 1 and 8 and the date/time is 24h in the future
             if (details.date && details.time && check24h(details.date, details.time) && !isNaN(details.passengers) && details.passengers > 0 && details.passengers < 9 && details.name) {
-                // TODO: Add further validation for date/time formats
-                // Check date format validation (e.g., regex for DD/MM/YYYY) or date validity
-                // (e.g., check-in before check-out).
                 details.valid = true;
             } else try {
                 semicolons.forEach(semicolon => {
@@ -103,9 +94,6 @@ function parseBookingDetails(message, interactiveType, flowReply) {
                     }
                 });
                 if (details.date && details.time && check24h(details.date, details.time) && !isNaN(details.passengers) && details.passengers > 0 && details.passengers < 9 && details.name) {
-                    // TODO: Add further validation for date/time formats
-                    // Check date format validation (e.g., regex for DD/MM/YYYY) or date validity
-                    // (e.g., check-in before check-out).
                     details.valid = true;
                 } else try {
                     details.date = semicolons[0].trim();
@@ -114,9 +102,6 @@ function parseBookingDetails(message, interactiveType, flowReply) {
                     details.name = semicolons[3].trim();
                     details.info = semicolons[4].trim();
                     if (details.date && details.time && check24h(details.date, details.time) && !isNaN(details.passengers) && details.passengers > 0 && details.passengers < 9 && details.name) {
-                        // TODO: Add further validation for date/time formats
-                        // Check date format validation (e.g., regex for DD/MM/YYYY) or date validity
-                        // (e.g., check-in before check-out).
                         details.valid = true;
                     }
                 } catch (error) {
@@ -166,8 +151,6 @@ function parseBookingDetailsForRebooking(message, context, interactiveType, flow
             details.luggage = JSON.parse(flowReply).screen_2_Luggage_0;
             details.info = JSON.parse(flowReply).screen_2_Extra_info_1;
             if (details.date && details.time && check24h(details.date, details.time) && !isNaN(details.passengers) && details.passengers > 0 && details.passengers < 9 && details.name) {
-                // TODO: Add further validation for date/time formats
-                // Check date format validation (e.g., regex for DD/MM/YYYY) or date validity
                 details.valid = true;
             }
         } catch (error) {
@@ -198,9 +181,6 @@ function parseBookingDetailsForRebooking(message, context, interactiveType, flow
 
             // Basic validation: ensure all required fields are present, passengers is a valid number between 1 and 8 and the date/time is 24h in the future
             if (details.date && details.time && check24h(details.date, details.time) && !isNaN(details.passengers) && details.passengers > 0 && details.passengers < 9 && details.name) {
-                // TODO: Add further validation for date/time formats
-                // Check date format validation (e.g., regex for DD/MM/YYYY) or date validity
-                // (e.g., check-in before check-out).
                 details.valid = true;
             } else try {
                 semicolons.forEach(semicolon => {
@@ -223,9 +203,6 @@ function parseBookingDetailsForRebooking(message, context, interactiveType, flow
                     }
                 });
                 if (details.date && details.time && check24h(details.date, details.time) && !isNaN(details.passengers) && details.passengers > 0 && details.passengers < 9 && details.name) {
-                    // TODO: Add further validation for date/time formats
-                    // Check date format validation (e.g., regex for DD/MM/YYYY) or date validity
-                    // (e.g., check-in before check-out).
                     details.valid = true;
                 } else try {
                     details.date = semicolons[0].trim();
@@ -233,9 +210,6 @@ function parseBookingDetailsForRebooking(message, context, interactiveType, flow
                     details.passengers = semicolons[2].trim();
                     details.info = semicolons[3].trim();
                     if (details.date && details.time && check24h(details.date, details.time) && !isNaN(details.passengers) && details.passengers > 0 && details.passengers < 9 && details.name) {
-                        // TODO: Add further validation for date/time formats
-                        // Check date format validation (e.g., regex for DD/MM/YYYY) or date validity
-                        // (e.g., check-in before check-out).
                         details.valid = true;
                     }
                 } catch (error) {

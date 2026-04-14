@@ -8,6 +8,7 @@ const {sendSummary} = require("../services/nodemailer");
 
 /**
  * Runs a scheduled job.
+ * Currently not used, instant mails are sent instead after creating a booking, updating, canceling, asking for CS, stopping a conversation, ...
  */
 async function scheduledJob() {
     scheduleJob({hour: 4, minute: 30}, async () => {

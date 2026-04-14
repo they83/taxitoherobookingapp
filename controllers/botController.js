@@ -5,8 +5,9 @@ const whatsappService = require('../services/whatsappService');
 const {parseBookingDetails, parseBookingDetailsForRebooking} = require('../utils/parser');
 const {messageTexts} = require("../config/messageTexts");
 const {verifyAddress, getDistanceToAirport, getDistanceFromAirport} = require("../services/googleMapsService");
-const {getBookingByBookingReference} = require("../models/bookingModel");
-const {getConversation, getConversationById, getPrice} = require("../models/conversationModel");
+const {getBookingByBookingReference, getAllBookingsAdmin} = require("../models/bookingModel");
+const {getConversationById, getPrice, getAllConversations} = require("../models/conversationModel");
+const {sendCSToAdmin, sendStopToAdmin, mailToAdmin} = require("../services/nodemailer");
 
 /**
  * Processes an incoming message based on the current conversation state.
@@ -25,7 +26,7 @@ async function processMessage(phoneNumber, messageText, conversation, buttonRepl
     const context = JSON.parse(JSON.stringify(conversation.context || {}));
 
     console.log(`Processing message for ${phoneNumber} in state: ${state} with message: "${messageText}" and button reply ${buttonReply}`);
-//    console.log(`Is admin prompt: ${isAdminPrompt}`);
+    console.log(`Is admin prompt: ${isAdminPrompt}`);
 
     // Delegate to specific handlers based on the current state
     // Each handler will manage its own state transitions and context updates
@@ -56,8 +57,7 @@ async function processMessage(phoneNumber, messageText, conversation, buttonRepl
             await handleSelectingToProceedRebooking(phoneNumber, messageText, buttonReply, context);
             break;
         case STATES.CHOSE_STOP:
-            // If conversation is stopped, typically restart or offer new options
-//            await handleStart(phoneNumber, messageText, buttonReply);
+            // If conversation is stopped, typically restart
             break;
         case STATES.ENTERING_BOOKING_DETAILS:
             await handleEnteringBookingDetails(phoneNumber, messageText, buttonReply, context, interactiveType, flowReply);
@@ -70,12 +70,10 @@ async function processMessage(phoneNumber, messageText, conversation, buttonRepl
             await handlePending(phoneNumber, messageText, buttonReply, context);
             break;
         case STATES.COMPLETED:
-            // If conversation is completed, typically restart or offer new options
-//            await handleStart(phoneNumber, messageText, buttonReply);
+            // If conversation is completed, typically restart
             break;
         case STATES.CS:
-            // If conversation is completed, typically restart or offer new options
-//            await handleStart(phoneNumber, messageText, buttonReply);
+            // If conversation is sent to CS, typically restart
             break;
         default:
             // Fallback for unknown or unhandled states, usually resets to welcome
@@ -130,10 +128,6 @@ async function handleSelectingLanguage(phoneNumber, message, buttonReply, contex
         await whatsappService.sendInteractiveMessageWith3ReplyButtons(phoneNumber, messageTexts.selectionMessageShortDutch, `1. Vanaf Zaventem 🛬`, `2. Naar Zaventem 🛫`, `3. CustomerService 💬`);
         // Transition to SELECTING_ARRIVAL_OR_DEPARTURE state, indicating the next steps are in Dutch
         await conversationModel.updateConversationState(phoneNumber, STATES.SELECTING_ARRIVAL_OR_DEPARTURE, {language: 'dutch'});
-    } else if (message === '4') {
-        await whatsappService.sendInteractiveMessageWith1CTAButton(phoneNumber, messageTexts.selectionMessageShortDutch, `1. Aankomst`);
-    } else if (message === '5') {
-        await whatsappService.sendInteractiveMessageWithList(phoneNumber);
     } else {
         await whatsappService.sendMessage(phoneNumber, messageTexts.incorrectLanguageSelectionMessage);
     }
@@ -172,8 +166,8 @@ async function handleSelectingArrivalOrDeparture(phoneNumber, message, buttonRep
             } else if (optionCs.includes(message) || optionCs.includes(buttonReply)) {
                 selectedOption = choiceCs[parseInt(message || buttonReply) - 3];
                 await whatsappService.sendMessage(phoneNumber, messageTexts.csEnglish);
-                // TODO: Implement actual customer service handoff (e.g., integrate with a CRM or human agent chat)
-                // For now, we'll reset the conversation to welcome to allow the user to restart.
+                await sendCSToAdmin(phoneNumber, context.language);
+                // the conversation will be reset to welcome to allow the user to restart.
                 await conversationModel.updateConversationState(phoneNumber, STATES.CS, {
                     selectedOption: selectedOption, language: context.language
                 });
@@ -205,8 +199,8 @@ async function handleSelectingArrivalOrDeparture(phoneNumber, message, buttonRep
             } else if (optionCs.includes(message) || optionCs.includes(buttonReply)) {
                 selectedOption = choiceCs[parseInt(message || buttonReply) - 3];
                 await whatsappService.sendMessage(phoneNumber, messageTexts.csFrench);
-                // TODO: Implement actual customer service handoff (e.g., integrate with a CRM or human agent chat)
-                // For now, we'll reset the conversation to welcome to allow the user to restart.
+                await sendCSToAdmin(phoneNumber, context.language);
+                // the conversation will be reset to welcome to allow the user to restart.
                 await conversationModel.updateConversationState(phoneNumber, STATES.CS, {
                     selectedOption: selectedOption, language: context.language
                 });
@@ -238,8 +232,8 @@ async function handleSelectingArrivalOrDeparture(phoneNumber, message, buttonRep
             } else if (optionCs.includes(message) || optionCs.includes(buttonReply)) {
                 selectedOption = choiceCs[parseInt(message || buttonReply) - 3];
                 await whatsappService.sendMessage(phoneNumber, messageTexts.csDutch);
-                // TODO: Implement actual customer service handoff (e.g., integrate with a CRM or human agent chat)
-                // For now, we'll reset the conversation to welcome to allow the user to restart.
+                await sendCSToAdmin(phoneNumber, context.language);
+                // the conversation will be reset to welcome to allow the user to restart.
                 await conversationModel.updateConversationState(phoneNumber, STATES.CS, {
                     selectedOption: selectedOption, language: context.language
                 });
@@ -657,12 +651,12 @@ async function handleSelectingToProceed(phoneNumber, message, buttonReply, conte
             await conversationModel.updateConversationState(phoneNumber, STATES.ENTERING_ADDRESS, context);
         } else {
             if (message === '1' || buttonReply === '1') {
-//                await whatsappService.sendMessage(phoneNumber, messageTexts.bookingDetailsEnglish);
                 await whatsappService.sendFlowEnglish(phoneNumber);
                 await conversationModel.updateConversationState(phoneNumber, STATES.ENTERING_BOOKING_DETAILS, context);
             } else if (message === '2' || buttonReply === '2') {
                 await whatsappService.sendMessage(phoneNumber, messageTexts.stopMessageEnglish);
                 await conversationModel.updateConversationState(phoneNumber, STATES.CHOSE_STOP, context);
+                await sendStopToAdmin(phoneNumber, context);
             } else {
                 // Should not happen if state transitions are managed correctly
                 await whatsappService.sendMessage(phoneNumber, messageTexts.incorrectSelectionMessageEnglish);
@@ -678,12 +672,12 @@ async function handleSelectingToProceed(phoneNumber, message, buttonReply, conte
             await conversationModel.updateConversationState(phoneNumber, STATES.ENTERING_ADDRESS, context);
         } else {
             if (message === '1' || buttonReply === '1') {
-//                await whatsappService.sendMessage(phoneNumber, messageTexts.bookingDetailsFrench);
                 await whatsappService.sendFlowFrench(phoneNumber);
                 await conversationModel.updateConversationState(phoneNumber, STATES.ENTERING_BOOKING_DETAILS, context);
             } else if (message === '2' || buttonReply === '2') {
                 await whatsappService.sendMessage(phoneNumber, messageTexts.stopMessageFrench);
                 await conversationModel.updateConversationState(phoneNumber, STATES.CHOSE_STOP, context);
+                await sendStopToAdmin(phoneNumber, context);
             } else {
                 // Should not happen if state transitions are managed correctly
                 await whatsappService.sendMessage(phoneNumber, messageTexts.incorrectSelectionMessageFrench);
@@ -699,12 +693,12 @@ async function handleSelectingToProceed(phoneNumber, message, buttonReply, conte
             await conversationModel.updateConversationState(phoneNumber, STATES.ENTERING_ADDRESS, context);
         } else {
             if (message === '1' || buttonReply === '1') {
-//                await whatsappService.sendMessage(phoneNumber, messageTexts.bookingDetailsDutch);
                 await whatsappService.sendFlowDutch(phoneNumber);
                 await conversationModel.updateConversationState(phoneNumber, STATES.ENTERING_BOOKING_DETAILS, context);
             } else if (message === '2' || buttonReply === '2') {
                 await whatsappService.sendMessage(phoneNumber, messageTexts.stopMessageDutch);
                 await conversationModel.updateConversationState(phoneNumber, STATES.CHOSE_STOP, context);
+                await sendStopToAdmin(phoneNumber, context);
             } else {
                 // Should not happen if state transitions are managed correctly
                 await whatsappService.sendMessage(phoneNumber, messageTexts.incorrectSelectionMessageDutch);
@@ -1111,12 +1105,12 @@ async function handleSelectingToProceedRebooking(phoneNumber, message, buttonRep
             await conversationModel.updateConversationState(phoneNumber, STATES.ENTERING_ADDRESS, context);
         } else {
             if (message === '1' || buttonReply === '1') {
-//                await whatsappService.sendMessage(phoneNumber, messageTexts.rebookingDetailsEnglish);
                 await whatsappService.sendFlowEnglish(phoneNumber);
                 await conversationModel.updateConversationState(phoneNumber, STATES.ENTERING_REBOOKING_DETAILS, context);
             } else if (message === '2' || buttonReply === '2') {
                 await whatsappService.sendMessage(phoneNumber, messageTexts.stopMessageEnglish);
                 await conversationModel.updateConversationState(phoneNumber, STATES.CHOSE_STOP, context);
+                await sendStopToAdmin(phoneNumber, context);
             } else {
                 // Should not happen if state transitions are managed correctly
                 await whatsappService.sendMessage(phoneNumber, messageTexts.incorrectSelectionMessageEnglish);
@@ -1132,12 +1126,12 @@ async function handleSelectingToProceedRebooking(phoneNumber, message, buttonRep
             await conversationModel.updateConversationState(phoneNumber, STATES.ENTERING_ADDRESS, context);
         } else {
             if (message === '1' || buttonReply === '1') {
-//                await whatsappService.sendMessage(phoneNumber, messageTexts.rebookingDetailsFrench);
                 await whatsappService.sendFlowFrench(phoneNumber);
                 await conversationModel.updateConversationState(phoneNumber, STATES.ENTERING_REBOOKING_DETAILS, context);
             } else if (message === '2' || buttonReply === '2') {
                 await whatsappService.sendMessage(phoneNumber, messageTexts.stopMessageFrench);
                 await conversationModel.updateConversationState(phoneNumber, STATES.CHOSE_STOP, context);
+                await sendStopToAdmin(phoneNumber, context);
             } else {
                 // Should not happen if state transitions are managed correctly
                 await whatsappService.sendMessage(phoneNumber, messageTexts.incorrectSelectionMessageFrench);
@@ -1153,12 +1147,12 @@ async function handleSelectingToProceedRebooking(phoneNumber, message, buttonRep
             await conversationModel.updateConversationState(phoneNumber, STATES.ENTERING_ADDRESS, context);
         } else {
             if (message === '1' || buttonReply === '1') {
-//                await whatsappService.sendMessage(phoneNumber, messageTexts.rebookingDetailsDutch);
                 await whatsappService.sendFlowDutch(phoneNumber);
                 await conversationModel.updateConversationState(phoneNumber, STATES.ENTERING_REBOOKING_DETAILS, context);
             } else if (message === '2' || buttonReply === '2') {
                 await whatsappService.sendMessage(phoneNumber, messageTexts.stopMessageDutch);
                 await conversationModel.updateConversationState(phoneNumber, STATES.CHOSE_STOP, context);
+                await sendStopToAdmin(phoneNumber, context);
             } else {
                 // Should not happen if state transitions are managed correctly
                 await whatsappService.sendMessage(phoneNumber, messageTexts.incorrectSelectionMessageDutch);
@@ -1556,11 +1550,9 @@ async function handlePending(phoneNumber, message, buttonReply, context) {
     if (context.language === 'english') {
         if (message.toLowerCase() === '0') {
             if (context.rebooking) {
-//                await whatsappService.sendMessage(phoneNumber, messageTexts.rebookingDetailsEnglish);
                 await whatsappService.sendFlowEnglish(phoneNumber);
                 await conversationModel.updateConversationState(phoneNumber, STATES.ENTERING_REBOOKING_DETAILS, context);
             } else {
-//                await whatsappService.sendMessage(phoneNumber, messageTexts.bookingDetailsEnglish);
                 await whatsappService.sendFlowEnglish(phoneNumber);
                 await conversationModel.updateConversationState(phoneNumber, STATES.ENTERING_BOOKING_DETAILS, context);
             }
@@ -1571,17 +1563,16 @@ async function handlePending(phoneNumber, message, buttonReply, context) {
             await whatsappService.sendInteractiveMessageWithImage_3ReplyButtons(phoneNumber, messageTexts.welcomeMessageShort, `1. English`, `2. Français`, `3. Nederlands`);
             await conversationModel.updateConversationState(phoneNumber, STATES.SELECTING_LANGUAGE, {});
         } else {
-            await bookingModel.updateInfoForBooking(phoneNumber, message);
+            const conversation = await conversationModel.getConversation(phoneNumber);
+            await bookingModel.updateInfoForBooking(phoneNumber, message, conversation);
             await whatsappService.sendMessage(phoneNumber, messageTexts.pendingMessageEnglish);
         }
     } else if (context.language === 'french') {
         if (message.toLowerCase() === '0') {
             if (context.rebooking) {
-//                await whatsappService.sendMessage(phoneNumber, messageTexts.rebookingDetailsFrench);
                 await whatsappService.sendFlowFrench(phoneNumber);
                 await conversationModel.updateConversationState(phoneNumber, STATES.ENTERING_REBOOKING_DETAILS, context);
             } else {
-//                await whatsappService.sendMessage(phoneNumber, messageTexts.bookingDetailsFrench);
                 await whatsappService.sendFlowFrench(phoneNumber);
                 await conversationModel.updateConversationState(phoneNumber, STATES.ENTERING_BOOKING_DETAILS, context);
             }
@@ -1592,17 +1583,16 @@ async function handlePending(phoneNumber, message, buttonReply, context) {
             await whatsappService.sendInteractiveMessageWithImage_3ReplyButtons(phoneNumber, messageTexts.welcomeMessageShort, `1. English`, `2. Français`, `3. Nederlands`);
             await conversationModel.updateConversationState(phoneNumber, STATES.SELECTING_LANGUAGE, {});
         } else {
-            await bookingModel.updateInfoForBooking(phoneNumber, message);
+            const conversation = await conversationModel.getConversation(phoneNumber);
+            await bookingModel.updateInfoForBooking(phoneNumber, message, conversation);
             await whatsappService.sendMessage(phoneNumber, messageTexts.pendingMessageFrench);
-        }
+            }
     } else if (context.language === 'dutch') {
         if (message.toLowerCase() === '0') {
             if (context.rebooking) {
-//                await whatsappService.sendMessage(phoneNumber, messageTexts.rebookingDetailsDutch);
                 await whatsappService.sendFlowDutch(phoneNumber);
                 await conversationModel.updateConversationState(phoneNumber, STATES.ENTERING_REBOOKING_DETAILS, context);
             } else {
-//                await whatsappService.sendMessage(phoneNumber, messageTexts.bookingDetailsDutch);
                 await whatsappService.sendFlowDutch(phoneNumber);
                 await conversationModel.updateConversationState(phoneNumber, STATES.ENTERING_BOOKING_DETAILS, context);
             }
@@ -1613,9 +1603,10 @@ async function handlePending(phoneNumber, message, buttonReply, context) {
             await whatsappService.sendInteractiveMessageWithImage_3ReplyButtons(phoneNumber, messageTexts.welcomeMessageShort, `1. English`, `2. Français`, `3. Nederlands`);
             await conversationModel.updateConversationState(phoneNumber, STATES.SELECTING_LANGUAGE, {});
         } else {
-            await bookingModel.updateInfoForBooking(phoneNumber, message);
+            const conversation = await conversationModel.getConversation(phoneNumber);
+            await bookingModel.updateInfoForBooking(phoneNumber, message, conversation);
             await whatsappService.sendMessage(phoneNumber, messageTexts.pendingMessageDutch);
-        }
+            }
     }
 }
 
@@ -1631,6 +1622,11 @@ async function handleAdmin(phoneNumber, message, buttonReply) {
         await whatsappService.sendInteractiveMessageWith3ReplyButtonsAdmin(phoneNumber, messageTexts.adminOverviewMessage, `1. Bookings`, `2. Context CS`, `3. Incomplete status`);
     } else if (message === 'allbookings' || buttonReply === '1. Bookings') {
         await whatsappService.sendInteractiveMessageWith3ReplyButtonsAdmin(phoneNumber, messageTexts.adminBookingsOverviewMessage, `1. Bookings pending`, `2. Confirmed today`, `3. Confirmed future`);
+    } else if (message === 'mailtables') {
+        await whatsappService.sendMessage(phoneNumber, messageTexts.adminMailMessage);
+        const allBookings = await getAllBookingsAdmin();
+        const allConversations = await getAllConversations();
+        await mailToAdmin(allBookings, allConversations);
     } else if (message === 'allcs' || buttonReply === '2. Context CS') {
         let allCs = await conversationModel.getAllCS();
         if (allCs[0] != null) {
@@ -1684,12 +1680,12 @@ ID: ${conversation.id}`;
             allBookings.forEach((booking) => {
                 const bookingMessage = `Booking reference: ${booking.booking_reference}
 Phone: ${booking.phone_number}
-Alternative phone: ${booking.alternativePhone}
+Alternative phone: ${booking.alternative_phone_number}
 Name: ${booking.customer_name}
 Date: ${booking.date}
 Time: ${booking.time}
 Passengers: ${booking.passengers}
-Flight number: ${booking.flightNr}
+Flight number: ${booking.flight_nr}
 Luggage: ${booking.luggage}
 Extra info: ${booking.extra_info}
 Option: ${booking.selected_option}
@@ -1715,12 +1711,12 @@ Price: ${booking.price}
             bookings.forEach((booking) => {
                 const bookingMessage = `Booking reference: ${booking.booking_reference}
 Phone: ${booking.phone_number}
-Alternative phone: ${booking.alternativePhone}
+Alternative phone: ${booking.alternative_phone_number}
 Name: ${booking.customer_name}
 Date: ${booking.date}
 Time: ${booking.time}
 Passengers: ${booking.passengers}
-Flight number: ${booking.flightNr}
+Flight number: ${booking.flight_nr}
 Luggage: ${booking.luggage}
 Extra info: ${booking.extra_info}
 Option: ${booking.selected_option}
@@ -1745,12 +1741,12 @@ Price: ${booking.price}
             bookings.forEach((booking) => {
                 const bookingMessage = `Booking reference: ${booking.booking_reference}
 Phone: ${booking.phone_number}
-Alternative phone: ${booking.alternativePhone}
+Alternative phone: ${booking.alternative_phone_number}
 Name: ${booking.customer_name}
 Date: ${booking.date}
 Time: ${booking.time}
 Passengers: ${booking.passengers}
-Flight number: ${booking.flightNr}
+Flight number: ${booking.flight_nr}
 Luggage: ${booking.luggage}
 Extra info: ${booking.extra_info}
 Option: ${booking.selected_option}
@@ -1779,6 +1775,31 @@ Price: ${booking.price}
         } else {
             await bookingModel.confirmBooking(bookingRef, booking.phone_number, phoneNumber, booking.language);
         }
+    } else if (message.toLowerCase().includes('update:')) {
+// finds the booking reference and sets its booking to confirmed
+// finds the conversation and sets it to completed
+// DOES NOT inform the client that (to be used for maintenance after the booking)
+// informs the admin that the booking has been confirmed
+        let bookingRef = '';
+        bookingRef = message.split(':')[1]?.trim().toUpperCase(); // Extract and trim the booking reference
+        const booking = await getBookingByBookingReference(bookingRef);
+        if (booking === null) {
+            await whatsappService.sendMessage(phoneNumber, messageTexts.adminNoBookingFoundMessage);
+        } else {
+            await bookingModel.confirmBookingSilent(bookingRef, phoneNumber);
+        }
+
+    } else if (message.toLowerCase().includes('deleteB:')) {
+// finds the booking reference and deletes the booking
+// informs the admin that the booking has been deleted
+        let bookingRef = '';
+        bookingRef = message.split(':')[1]?.trim().toUpperCase(); // Extract and trim the booking reference
+        const booking = await getBookingByBookingReference(bookingRef);
+        if (booking === null) {
+            await whatsappService.sendMessage(phoneNumber, messageTexts.adminNoBookingFoundMessage);
+        } else {
+            await bookingModel.deleteBooking(bookingRef, phoneNumber);
+        }
     } else if (message.toLowerCase().includes('complete:')) {
 // finds the conversation and sets its status to completed
 // informs the admin that the conversation has been updated
@@ -1790,6 +1811,18 @@ Price: ${booking.price}
         } else {
             await conversationModel.completeCsConversation(id);
             await whatsappService.sendMessage(phoneNumber, messageTexts.adminCsUpdatedMessage);
+        }
+    } else if (message.toLowerCase().includes('deleteC:')) {
+// finds the conversation and deletes it
+// informs the admin that the conversation has been deleted
+        let id = '';
+        id = message.split(':')[1]?.trim().toUpperCase(); // Extract and trim the booking reference
+        const conversation = await getConversationById(id);
+        if (conversation === null) {
+            await whatsappService.sendMessage(phoneNumber, messageTexts.adminNoCsConversationFoundMessage);
+        } else {
+            await conversationModel.deleteCsConversation(id);
+            await whatsappService.sendMessage(phoneNumber, messageTexts.adminCsDeletedMessage);
         }
     }
 }
