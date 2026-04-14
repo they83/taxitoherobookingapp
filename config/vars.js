@@ -25,6 +25,7 @@ module.exports = {
     // Server Port
     PORT: process.env.PORT || 3000,
     // Node environment
+    // only impacts error handling (dev has more logging)
     ENV: process.env.NODE_ENV || 'development',
 
     // M-Pesa Configuration (Placeholder - add your actual DARAJA API credentials from .env)

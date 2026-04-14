@@ -1174,72 +1174,47 @@ async function handleSelectingToProceedRebooking(phoneNumber, message, buttonRep
  * @param {Object} flowReply - The reply via flow.
  */
 async function handleEnteringRebookingDetails(phoneNumber, message, buttonReply, context, interactiveType, flowReply) {
-    if (message.toLowerCase() === '0') {
+    const bookingDetails = parseBookingDetailsForRebooking(message, context, interactiveType, flowReply); // Parse details using the utility function
+    console.log(bookingDetails);
+    if (bookingDetails.valid) {
         if (context.language === 'english') {
-            const addressMessage = `You entered this address: 
-*${context.address}*
-Our price is ${context.price}€
-Do you want to continue or stop?`;
-            await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Continue`, `2. Stop`);
-            await conversationModel.updateConversationState(phoneNumber, STATES.CHOOSING_PROCEED_REBOOKING, context);
-        } else if (context.language === 'french') {
-            const addressMessage = `Vous avez saisi l'adresse suivante: 
-*${context.address}*
-Notre prix est ${context.price}€
-Voulez-vous continuer ou arrêter?`;
-            await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Verdergaan`, `2. Stoppen`);
-            await conversationModel.updateConversationState(phoneNumber, STATES.CHOOSING_PROCEED_REBOOKING, context);
-        } else if (context.language === 'dutch') {
-            const addressMessage = `U hebt dit adres opgegeven: 
-*${context.address}*
-Onze prijs is ${context.price}€
-Wil u verdergaan of stoppen?`;
-            await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Verdergaan`, `2. Stoppen`);
-            await conversationModel.updateConversationState(phoneNumber, STATES.CHOOSING_PROCEED_REBOOKING, context);
-        }
-    } else if (message !== '0') {
-        const bookingDetails = parseBookingDetailsForRebooking(message, context, interactiveType, flowReply); // Parse details using the utility function
-        if (bookingDetails.valid) {
-            console.log('valid booking details');
-            if (context.language === 'english') {
-                if (context.selectedOption.toLowerCase() === 'from airport') {
-                    // Store all booking details in context, then transition to PENDING state
-                    const newContext = {
-                        language: context.language,
-                        selectedOption: context.selectedOption,
-                        address: context.address,
-                        distanceToAirport: context.distanceToAirport,
-                        durationToAirport: context.durationToAirport,
-                        distanceFromAirport: context.distanceFromAirport,
-                        durationFromAirport: context.durationFromAirport,
-                        price: context.price,
-                        date: bookingDetails.date,
-                        time: bookingDetails.time,
-                        passengers: bookingDetails.passengers,
-                        name: bookingDetails.name
-                            .split(' ') // split on white space, so you have an array of words
-                            .map(word => word[0].toUpperCase() + word.slice(1)) // map each word, capitalizing the first letter
-                            .join(' ') // join it all back together with a space
-                        ,
-                        info: bookingDetails.info,
-                        alternativePhone: bookingDetails.alternativePhone,
-                        luggage: bookingDetails.luggage,
-                        flightNr: bookingDetails.flightNr,
-                        rebooking: true
-                    };
-                    let conversation = await conversationModel.getConversation(phoneNumber);
-                    let bookingReference = '';
-                    if (conversation.booking_reference === null) {
-                        let bookingRef = await bookingModel.createBooking(phoneNumber, newContext);
-                        bookingReference = bookingRef;
-                        await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
-                        await conversationModel.addBookingRefToConversation(phoneNumber, JSON.parse(bookingRef));
-                    } else {
-                        bookingReference = conversation.booking_reference;
-                        await bookingModel.updateBooking(phoneNumber, newContext, conversation.booking_reference);
-                        await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
-                    }
-                    const confirmationMessage = `Booking Summary:
+            if (context.selectedOption.toLowerCase() === 'from airport') {
+                // Store all booking details in context, then transition to PENDING state
+                const newContext = {
+                    language: context.language,
+                    selectedOption: context.selectedOption,
+                    address: context.address,
+                    distanceToAirport: context.distanceToAirport,
+                    durationToAirport: context.durationToAirport,
+                    distanceFromAirport: context.distanceFromAirport,
+                    durationFromAirport: context.durationFromAirport,
+                    price: context.price,
+                    date: bookingDetails.date,
+                    time: bookingDetails.time,
+                    passengers: bookingDetails.passengers,
+                    name: bookingDetails.name
+                        .split(' ') // split on white space, so you have an array of words
+                        .map(word => word[0].toUpperCase() + word.slice(1)) // map each word, capitalizing the first letter
+                        .join(' ') // join it all back together with a space
+                    ,
+                    info: bookingDetails.info,
+                    alternativePhone: bookingDetails.alternativePhone,
+                    luggage: bookingDetails.luggage,
+                    flightNr: bookingDetails.flightNr
+                };
+                let conversation = await conversationModel.getConversation(phoneNumber);
+                let bookingReference = '';
+                if (conversation.booking_reference === null) {
+                    let bookingRef = await bookingModel.createBooking(phoneNumber, newContext);
+                    bookingReference = bookingRef;
+                    await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
+                    await conversationModel.addBookingRefToConversation(phoneNumber, JSON.parse(bookingRef));
+                } else {
+                    bookingReference = conversation.booking_reference;
+                    await bookingModel.updateBooking(phoneNumber, newContext, conversation.booking_reference);
+                    await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
+                }
+                const confirmationMessage = `Booking Summary:
 
 Booking reference: ${bookingReference}
 From Zaventem airport to ${context.address}
@@ -1254,41 +1229,40 @@ Additional info: ${bookingDetails.info}
                     
 When your booking is reviewed you will be contacted. You can still send additional info, or use 0 to go back to the last step, or CANCEL to start over.`;
 
-                    await whatsappService.sendMessage(phoneNumber, confirmationMessage);
-                } else if (context.selectedOption.toLowerCase() === 'to airport') {
-                    // Store all booking details in context, then transition to PENDING state
-                    const newContext = {
-                        language: context.language,
-                        selectedOption: context.selectedOption,
-                        address: context.address,
-                        distanceToAirport: context.distanceToAirport,
-                        durationToAirport: context.durationToAirport,
-                        distanceFromAirport: context.distanceFromAirport,
-                        durationFromAirport: context.durationFromAirport,
-                        price: context.price,
-                        date: bookingDetails.date,
-                        time: bookingDetails.time,
-                        passengers: bookingDetails.passengers,
-                        name: bookingDetails.name.split(' ').map(word => word[0].toUpperCase() + word.slice(1)).join(' '),
-                        info: bookingDetails.info,
-                        alternativePhone: bookingDetails.alternativePhone,
-                        luggage: bookingDetails.luggage,
-                        flightNr: bookingDetails.flightNr,
-                        rebooking: true
-                    };
-                    let conversation = await conversationModel.getConversation(phoneNumber);
-                    let bookingReference = '';
-                    if (conversation.booking_reference === null) {
-                        let bookingRef = await bookingModel.createBooking(phoneNumber, newContext);
-                        bookingReference = bookingRef;
-                        await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
-                        await conversationModel.addBookingRefToConversation(phoneNumber, JSON.parse(bookingRef));
-                    } else {
-                        bookingReference = conversation.booking_reference;
-                        await bookingModel.updateBooking(phoneNumber, newContext, conversation.booking_reference);
-                        await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
-                    }
-                    const confirmationMessage = `Booking Summary:
+                await whatsappService.sendMessage(phoneNumber, confirmationMessage);
+            } else if (context.selectedOption.toLowerCase() === 'to airport') {
+                // Store all booking details in context, then transition to PENDING state
+                const newContext = {
+                    language: context.language,
+                    selectedOption: context.selectedOption,
+                    address: context.address,
+                    distanceToAirport: context.distanceToAirport,
+                    durationToAirport: context.durationToAirport,
+                    distanceFromAirport: context.distanceFromAirport,
+                    durationFromAirport: context.durationFromAirport,
+                    price: context.price,
+                    date: bookingDetails.date,
+                    time: bookingDetails.time,
+                    passengers: bookingDetails.passengers,
+                    name: bookingDetails.name.split(' ').map(word => word[0].toUpperCase() + word.slice(1)).join(' '),
+                    info: bookingDetails.info,
+                    alternativePhone: bookingDetails.alternativePhone,
+                    luggage: bookingDetails.luggage,
+                    flightNr: bookingDetails.flightNr
+                };
+                let conversation = await conversationModel.getConversation(phoneNumber);
+                let bookingReference = '';
+                if (conversation.booking_reference === null) {
+                    let bookingRef = await bookingModel.createBooking(phoneNumber, newContext);
+                    bookingReference = bookingRef;
+                    await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
+                    await conversationModel.addBookingRefToConversation(phoneNumber, JSON.parse(bookingRef));
+                } else {
+                    bookingReference = conversation.booking_reference;
+                    await bookingModel.updateBooking(phoneNumber, newContext, conversation.booking_reference);
+                    await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
+                }
+                const confirmationMessage = `Booking Summary:
 
 Booking reference: ${bookingReference}
 From ${context.address} to Zaventem airport
@@ -1303,47 +1277,47 @@ Additional info: ${bookingDetails.info}
                     
 When your booking is reviewed you will be contacted. You can still send additional info, or use 0 to go back to the last step, or CANCEL to start over.`;
 
-                    await whatsappService.sendMessage(phoneNumber, confirmationMessage);
+                await whatsappService.sendMessage(phoneNumber, confirmationMessage);
+            } else {
+                await whatsappService.sendMessage(phoneNumber, messageTexts.couldNotParseBookingDetailsEnglish);
+                await whatsappService.sendFlowEnglish(phoneNumber);
+
+                // Stay in CONFIRM_BOOKING state with the same context to allow re-entry
+            }
+        } else if (context.language === 'french') {
+            if (context.selectedOption.toLowerCase() === 'from airport') {
+                // Store all booking details in context, then transition to PENDING state
+                const newContext = {
+                    language: context.language,
+                    selectedOption: context.selectedOption,
+                    address: context.address,
+                    distanceToAirport: context.distanceToAirport,
+                    durationToAirport: context.durationToAirport,
+                    distanceFromAirport: context.distanceFromAirport,
+                    durationFromAirport: context.durationFromAirport,
+                    price: context.price,
+                    date: bookingDetails.date,
+                    time: bookingDetails.time,
+                    passengers: bookingDetails.passengers,
+                    name: bookingDetails.name.split(' ').map(word => word[0].toUpperCase() + word.slice(1)).join(' '),
+                    info: bookingDetails.info,
+                    alternativePhone: bookingDetails.alternativePhone,
+                    luggage: bookingDetails.luggage,
+                    flightNr: bookingDetails.flightNr
+                };
+                let conversation = await conversationModel.getConversation(phoneNumber);
+                let bookingReference = '';
+                if (conversation.booking_reference === null) {
+                    let bookingRef = await bookingModel.createBooking(phoneNumber, newContext);
+                    bookingReference = bookingRef;
+                    await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
+                    await conversationModel.addBookingRefToConversation(phoneNumber, JSON.parse(bookingRef));
                 } else {
-                    await whatsappService.sendMessage(phoneNumber, messageTexts.couldNotParseBookingDetailsEnglish);
-                    await whatsappService.sendFlowEnglish(phoneNumber);
-                    // Stay in CONFIRM_BOOKING state with the same context to allow re-entry
+                    bookingReference = conversation.booking_reference;
+                    await bookingModel.updateBooking(phoneNumber, newContext, conversation.booking_reference);
+                    await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
                 }
-            } else if (context.language === 'french') {
-                if (context.selectedOption.toLowerCase() === 'from airport') {
-                    // Store all booking details in context, then transition to PENDING state
-                    const newContext = {
-                        language: context.language,
-                        selectedOption: context.selectedOption,
-                        address: context.address,
-                        distanceToAirport: context.distanceToAirport,
-                        durationToAirport: context.durationToAirport,
-                        distanceFromAirport: context.distanceFromAirport,
-                        durationFromAirport: context.durationFromAirport,
-                        price: context.price,
-                        date: bookingDetails.date,
-                        time: bookingDetails.time,
-                        passengers: bookingDetails.passengers,
-                        name: bookingDetails.name.split(' ').map(word => word[0].toUpperCase() + word.slice(1)).join(' '),
-                        info: bookingDetails.info,
-                        alternativePhone: bookingDetails.alternativePhone,
-                        luggage: bookingDetails.luggage,
-                        flightNr: bookingDetails.flightNr,
-                        rebooking: true
-                    };
-                    let conversation = await conversationModel.getConversation(phoneNumber);
-                    let bookingReference = '';
-                    if (conversation.booking_reference === null) {
-                        let bookingRef = await bookingModel.createBooking(phoneNumber, newContext);
-                        bookingReference = bookingRef;
-                        await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
-                        await conversationModel.addBookingRefToConversation(phoneNumber, JSON.parse(bookingRef));
-                    } else {
-                        bookingReference = conversation.booking_reference;
-                        await bookingModel.updateBooking(phoneNumber, newContext, conversation.booking_reference);
-                        await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
-                    }
-                    const confirmationMessage = `Résumé de réservation:
+                const confirmationMessage = `Résumé de réservation:
 
 Référence de réservation: ${bookingReference}
 Depuis Zaventem vers ${context.address}
@@ -1358,41 +1332,40 @@ Informations complémentaires: ${bookingDetails.info}
 
 Lorsque votre réservation sera examinée, vous serez contacté. Vous pouvez encore envoyer des informations supplémentaires, utiliser 0 pour revenir à l'étape précédente ou ANNULER pour recommencer.`;
 
-                    await whatsappService.sendMessage(phoneNumber, confirmationMessage);
-                } else if (context.selectedOption.toLowerCase() === 'to airport') {
-                    // Store all booking details in context, then transition to PENDING state
-                    const newContext = {
-                        language: context.language,
-                        selectedOption: context.selectedOption,
-                        address: context.address,
-                        distanceToAirport: context.distanceToAirport,
-                        durationToAirport: context.durationToAirport,
-                        distanceFromAirport: context.distanceFromAirport,
-                        durationFromAirport: context.durationFromAirport,
-                        price: context.price,
-                        date: bookingDetails.date,
-                        time: bookingDetails.time,
-                        passengers: bookingDetails.passengers,
-                        name: bookingDetails.name.split(' ').map(word => word[0].toUpperCase() + word.slice(1)).join(' '),
-                        info: bookingDetails.info,
-                        alternativePhone: bookingDetails.alternativePhone,
-                        luggage: bookingDetails.luggage,
-                        flightNr: bookingDetails.flightNr,
-                        rebooking: true
-                    };
-                    let conversation = await conversationModel.getConversation(phoneNumber);
-                    let bookingReference = '';
-                    if (conversation.booking_reference === null) {
-                        let bookingRef = await bookingModel.createBooking(phoneNumber, newContext);
-                        await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
-                        await conversationModel.addBookingRefToConversation(phoneNumber, JSON.parse(bookingRef));
-                        bookingReference = bookingRef;
-                    } else {
-                        bookingReference = conversation.booking_reference;
-                        await bookingModel.updateBooking(phoneNumber, newContext, bookingReference);
-                        await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
-                    }
-                    const confirmationMessage = `Résumé de réservation:
+                await whatsappService.sendMessage(phoneNumber, confirmationMessage);
+            } else if (context.selectedOption.toLowerCase() === 'to airport') {
+                // Store all booking details in context, then transition to PENDING state
+                const newContext = {
+                    language: context.language,
+                    selectedOption: context.selectedOption,
+                    address: context.address,
+                    distanceToAirport: context.distanceToAirport,
+                    durationToAirport: context.durationToAirport,
+                    distanceFromAirport: context.distanceFromAirport,
+                    durationFromAirport: context.durationFromAirport,
+                    price: context.price,
+                    date: bookingDetails.date,
+                    time: bookingDetails.time,
+                    passengers: bookingDetails.passengers,
+                    name: bookingDetails.name.split(' ').map(word => word[0].toUpperCase() + word.slice(1)).join(' '),
+                    info: bookingDetails.info,
+                    alternativePhone: bookingDetails.alternativePhone,
+                    luggage: bookingDetails.luggage,
+                    flightNr: bookingDetails.flightNr
+                };
+                let conversation = await conversationModel.getConversation(phoneNumber);
+                let bookingReference = '';
+                if (conversation.booking_reference === null) {
+                    let bookingRef = await bookingModel.createBooking(phoneNumber, newContext);
+                    await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
+                    await conversationModel.addBookingRefToConversation(phoneNumber, JSON.parse(bookingRef));
+                    bookingReference = bookingRef;
+                } else {
+                    bookingReference = conversation.booking_reference;
+                    await bookingModel.updateBooking(phoneNumber, newContext, bookingReference);
+                    await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
+                }
+                const confirmationMessage = `Résumé de réservation:
 
 Référence de réservation: ${bookingReference}
 Depuis ${context.address} vers Zaventem
@@ -1403,51 +1376,50 @@ Nom: ${bookingDetails.name.split(' ').map(word => word[0].toUpperCase() + word.s
 Numéro de téléphone alternatif: ${bookingDetails.alternativePhone}
 Numéro de vol : ${bookingDetails.flightNr}
 Bagages : ${bookingDetails.luggage}
-Informations complémentaires: ${bookingDetails.info}
+Informations complémentaires: ${bookingDetails.info}                    
 
 Lorsque votre réservation sera examinée, vous serez contacté. Vous pouvez encore envoyer des informations supplémentaires, utiliser 0 pour revenir à l'étape précédente ou ANNULER pour recommencer.`;
 
-                    await whatsappService.sendMessage(phoneNumber, confirmationMessage);
+                await whatsappService.sendMessage(phoneNumber, confirmationMessage);
+            } else {
+                await whatsappService.sendMessage(phoneNumber, messageTexts.couldNotParseBookingDetailsFrench);
+                await whatsappService.sendFlowFrench(phoneNumber);
+                // Stay in CONFIRM_BOOKING state with the same context to allow re-entry
+            }
+        } else if (context.language === 'dutch') {
+            if (context.selectedOption.toLowerCase() === 'from airport') {
+                // Store all booking details in context, then transition to PENDING state
+                const newContext = {
+                    language: context.language,
+                    selectedOption: context.selectedOption,
+                    address: context.address,
+                    distanceToAirport: context.distanceToAirport,
+                    durationToAirport: context.durationToAirport,
+                    distanceFromAirport: context.distanceFromAirport,
+                    durationFromAirport: context.durationFromAirport,
+                    price: context.price,
+                    date: bookingDetails.date,
+                    time: bookingDetails.time,
+                    passengers: bookingDetails.passengers,
+                    name: bookingDetails.name.split(' ').map(word => word[0].toUpperCase() + word.slice(1)).join(' '),
+                    info: bookingDetails.info,
+                    alternativePhone: bookingDetails.alternativePhone,
+                    luggage: bookingDetails.luggage,
+                    flightNr: bookingDetails.flightNr
+                };
+                let conversation = await conversationModel.getConversation(phoneNumber);
+                let bookingReference = '';
+                if (conversation.booking_reference === null) {
+                    let bookingRef = await bookingModel.createBooking(phoneNumber, newContext);
+                    bookingReference = bookingRef;
+                    await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
+                    await conversationModel.addBookingRefToConversation(phoneNumber, JSON.parse(bookingRef));
                 } else {
-                    await whatsappService.sendMessage(phoneNumber, messageTexts.couldNotParseBookingDetailsFrench);
-                    await whatsappService.sendFlowFrench(phoneNumber);
-                    // Stay in CONFIRM_BOOKING state with the same context to allow re-entry
+                    bookingReference = conversation.booking_reference;
+                    await bookingModel.updateBooking(phoneNumber, newContext, conversation.booking_reference);
+                    await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
                 }
-            } else if (context.language === 'dutch') {
-                if (context.selectedOption.toLowerCase() === 'from airport') {
-                    // Store all booking details in context, then transition to PENDING state
-                    const newContext = {
-                        language: context.language,
-                        selectedOption: context.selectedOption,
-                        address: context.address,
-                        distanceToAirport: context.distanceToAirport,
-                        durationToAirport: context.durationToAirport,
-                        distanceFromAirport: context.distanceFromAirport,
-                        durationFromAirport: context.durationFromAirport,
-                        price: context.price,
-                        date: bookingDetails.date,
-                        time: bookingDetails.time,
-                        passengers: bookingDetails.passengers,
-                        name: bookingDetails.name.split(' ').map(word => word[0].toUpperCase() + word.slice(1)).join(' '),
-                        info: bookingDetails.info,
-                        alternativePhone: bookingDetails.alternativePhone,
-                        luggage: bookingDetails.luggage,
-                        flightNr: bookingDetails.flightNr,
-                        rebooking: true
-                    };
-                    let conversation = await conversationModel.getConversation(phoneNumber);
-                    let bookingReference = '';
-                    if (conversation.booking_reference === null) {
-                        let bookingRef = await bookingModel.createBooking(phoneNumber, newContext);
-                        bookingReference = bookingRef;
-                        await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
-                        await conversationModel.addBookingRefToConversation(phoneNumber, JSON.parse(bookingRef));
-                    } else {
-                        bookingReference = conversation.booking_reference;
-                        await bookingModel.updateBooking(phoneNumber, newContext, conversation.booking_reference);
-                        await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
-                    }
-                    const confirmationMessage = `Samenvatting reservatie:
+                const confirmationMessage = `Samenvatting reservatie:
 
 Boeking referentie: ${bookingReference}
 Van luchthaven Zaventem naar ${context.address}
@@ -1459,44 +1431,43 @@ Alternatief telefoonnummer: ${bookingDetails.alternativePhone}
 Vluchtnummer: ${bookingDetails.flightNr}
 Baggage: ${bookingDetails.luggage}
 Extra info: ${bookingDetails.info}
-                    
+
 Als je boeking is nagekeken zal je worden gecontacteerd. Je kan nog steeds extra info sturen, of 0 gebruiken om naar de vorige stap terug te keren, of 'ANNULEER' om opnieuw te beginnen.`;
 
-                    await whatsappService.sendMessage(phoneNumber, confirmationMessage);
-                } else if (context.selectedOption.toLowerCase() === 'to airport') {
-                    // Store all booking details in context, then transition to PENDING state
-                    const newContext = {
-                        language: context.language,
-                        selectedOption: context.selectedOption,
-                        address: context.address,
-                        distanceToAirport: context.distanceToAirport,
-                        durationToAirport: context.durationToAirport,
-                        distanceFromAirport: context.distanceFromAirport,
-                        durationFromAirport: context.durationFromAirport,
-                        price: context.price,
-                        date: bookingDetails.date,
-                        time: bookingDetails.time,
-                        passengers: bookingDetails.passengers,
-                        name: bookingDetails.name.split(' ').map(word => word[0].toUpperCase() + word.slice(1)).join(' '),
-                        info: bookingDetails.info,
-                        alternativePhone: bookingDetails.alternativePhone,
-                        luggage: bookingDetails.luggage,
-                        flightNr: bookingDetails.flightNr,
-                        rebooking: true
-                    };
-                    let conversation = await conversationModel.getConversation(phoneNumber);
-                    let bookingReference = '';
-                    if (conversation.booking_reference === null) {
-                        let bookingRef = await bookingModel.createBooking(phoneNumber, newContext);
-                        bookingReference = bookingRef;
-                        await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
-                        await conversationModel.addBookingRefToConversation(phoneNumber, JSON.parse(bookingRef));
-                    } else {
-                        bookingReference = conversation.booking_reference;
-                        await bookingModel.updateBooking(phoneNumber, newContext, conversation.booking_reference);
-                        await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
-                    }
-                    const confirmationMessage = `Samenvatting reservatie:
+                await whatsappService.sendMessage(phoneNumber, confirmationMessage);
+            } else if (context.selectedOption.toLowerCase() === 'to airport') {
+                // Store all booking details in context, then transition to PENDING state
+                const newContext = {
+                    language: context.language,
+                    selectedOption: context.selectedOption,
+                    address: context.address,
+                    distanceToAirport: context.distanceToAirport,
+                    durationToAirport: context.durationToAirport,
+                    distanceFromAirport: context.distanceFromAirport,
+                    durationFromAirport: context.durationFromAirport,
+                    price: context.price,
+                    date: bookingDetails.date,
+                    time: bookingDetails.time,
+                    passengers: bookingDetails.passengers,
+                    name: bookingDetails.name.split(' ').map(word => word[0].toUpperCase() + word.slice(1)).join(' '),
+                    info: bookingDetails.info,
+                    alternativePhone: bookingDetails.alternativePhone,
+                    luggage: bookingDetails.luggage,
+                    flightNr: bookingDetails.flightNr
+                };
+                let conversation = await conversationModel.getConversation(phoneNumber);
+                let bookingReference = '';
+                if (conversation.booking_reference === null) {
+                    let bookingRef = await bookingModel.createBooking(phoneNumber, newContext);
+                    bookingReference = bookingRef;
+                    await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
+                    await conversationModel.addBookingRefToConversation(phoneNumber, JSON.parse(bookingRef));
+                } else {
+                    bookingReference = conversation.booking_reference;
+                    await bookingModel.updateBooking(phoneNumber, newContext, conversation.booking_reference);
+                    await conversationModel.updateConversationState(phoneNumber, STATES.PENDING, newContext);
+                }
+                const confirmationMessage = `Samenvatting reservatie:
 
 Boeking referentie: ${bookingReference}
 Van ${context.address} naar luchthaven Zaventem
@@ -1508,16 +1479,14 @@ Alternatief telefoonnummer: ${bookingDetails.alternativePhone}
 Vluchtnummer: ${bookingDetails.flightNr}
 Baggage: ${bookingDetails.luggage}
 Extra info: ${bookingDetails.info}
-                    
+
 Als je boeking is nagekeken zal je worden gecontacteerd. Je kan nog steeds extra info sturen, of 0 gebruiken om naar de vorige stap terug te keren, of 'ANNULEER' om opnieuw te beginnen.`;
 
-                    await whatsappService.sendMessage(phoneNumber, confirmationMessage);
-                } else {
-                    await whatsappService.sendMessage(phoneNumber, messageTexts.couldNotParseBookingDetailsDutch);
-                    await whatsappService.sendFlowDutch(phoneNumber);
-                    // Stay in CONFIRM_BOOKING state with the same context to allow re-entry
-                }
-
+                await whatsappService.sendMessage(phoneNumber, confirmationMessage);
+            } else {
+                await whatsappService.sendMessage(phoneNumber, messageTexts.couldNotParseBookingDetailsDutch);
+                await whatsappService.sendFlowDutch(phoneNumber);
+                // Stay in CONFIRM_BOOKING state with the same context to allow re-entry
             }
         }
     } else {
@@ -1585,7 +1554,7 @@ async function handlePending(phoneNumber, message, buttonReply, context) {
             const conversation = await conversationModel.getConversation(phoneNumber);
             await bookingModel.updateInfoForBooking(phoneNumber, message, conversation);
             await whatsappService.sendMessage(phoneNumber, messageTexts.pendingMessageFrench);
-            }
+        }
     } else if (context.language === 'dutch') {
         if (message.toLowerCase() === '0') {
             if (context.rebooking) {
@@ -1605,7 +1574,7 @@ async function handlePending(phoneNumber, message, buttonReply, context) {
             const conversation = await conversationModel.getConversation(phoneNumber);
             await bookingModel.updateInfoForBooking(phoneNumber, message, conversation);
             await whatsappService.sendMessage(phoneNumber, messageTexts.pendingMessageDutch);
-            }
+        }
     }
 }
 
@@ -1788,7 +1757,7 @@ Price: ${booking.price}
             await bookingModel.confirmBookingSilent(bookingRef, phoneNumber);
         }
 
-    } else if (message.toLowerCase().includes('deleteB:')) {
+    } else if (message.toLowerCase().includes('deleteb:')) {
 // finds the booking reference and deletes the booking
 // informs the admin that the booking has been deleted
         let bookingRef = '';
@@ -1811,7 +1780,7 @@ Price: ${booking.price}
             await conversationModel.completeCsConversation(id);
             await whatsappService.sendMessage(phoneNumber, messageTexts.adminCsUpdatedMessage);
         }
-    } else if (message.toLowerCase().includes('deleteC:')) {
+    } else if (message.toLowerCase().includes('deletec:')) {
 // finds the conversation and deletes it
 // informs the admin that the conversation has been deleted
         let id = '';

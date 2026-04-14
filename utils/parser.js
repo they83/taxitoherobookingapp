@@ -19,12 +19,9 @@ function parseBookingDetails(message, interactiveType, flowReply) {
     const lines = message.split('\n'); // Split the message into individual lines
     const semicolons = message.split(';'); // Split the message into individual lines
     const details = {valid: false, date: null, time: null, passengers: null, name: null, info: null, alternativePhone: null, flightNr: null, luggage: null};
-
     if (interactiveType === 'nfm_reply') {
         try {
-
             console.log(JSON.parse(flowReply));
-
             details.date = JSON.parse(flowReply).screen_0_Date_0;
             details.time = JSON.parse(flowReply).screen_0_hhmm_1.replace(/\D/g, "");
             details.passengers = JSON.parse(flowReply).screen_0_18_2;
@@ -142,8 +139,9 @@ function parseBookingDetailsForRebooking(message, context, interactiveType, flow
     const details = {valid: false, date: null, time: null, passengers: null, name: context.name, info: null, alternativePhone: null, flightNr: null, luggage: null};
     if (interactiveType === 'nfm_reply') {
         try {
+            console.log(JSON.parse(flowReply));
             details.date = JSON.parse(flowReply).screen_0_Date_0;
-            details.time = JSON.parse(flowReply).screen_0_hhmm_1;
+            details.time = JSON.parse(flowReply).screen_0_hhmm_1.replace(/\D/g, "");
             details.passengers = JSON.parse(flowReply).screen_0_18_2;
             details.name = JSON.parse(flowReply).screen_1_Name_0.trim();
             details.alternativePhone = JSON.parse(flowReply).screen_1_Phone_number_1;

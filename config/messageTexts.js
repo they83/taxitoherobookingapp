@@ -155,17 +155,14 @@ Alles op één regel gescheiden door ; in the *exacte* format zoals in dit voorb
 U kan altijd 0 gebruiken om naar de laatste step terug te keren.`,
     couldNotParseBookingDetailsEnglish:
 `I could not understand the booking details. 
-Please provide them in the *exact format* shown above.
 The booking needs to be made at least 24h in advance. 
 The max number of passengers is 8.`,
     couldNotParseBookingDetailsFrench:
 `Je n'ai pas compris les détails de la réservation. 
-Veuillez me les fournir dans le format *exact* indiqué ci-dessus.
 La réservation doit être effectuée au moins 24h à l'avance.
 Le nombre maximum de passagers est 8.`,
     couldNotParseBookingDetailsDutch:
 `Ik kon de details niet verwerken. 
-Gelieve ze nogmaals in het *exacte formaat* zoals hierboven getoond in te voeren.
 De boeking moet ten minste 24u op voorhand gemaakt worden. 
 Het maximum aantal passagiers is 8.`,
     pendingMessageEnglish:
