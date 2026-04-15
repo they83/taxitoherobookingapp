@@ -35,4 +35,5 @@ module.exports = {
     // MPESA_SHORTCODE: process.env.MPESA_SHORTCODE,
     // MPESA_PASSKEY: process.env.MPESA_PASSKEY,
     // MPESA_CALLBACK_URL: process.env.MPESA_CALLBACK_URL,
+
 };
