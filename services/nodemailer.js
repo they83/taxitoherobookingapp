@@ -278,19 +278,24 @@ async function sendStopToAdmin(phoneNr, context){
     }
 }
 
-async function mailToAdmin(bookings, conversations){
+async function mailToAdmin(bookings, conversations, customers){
     allBookingsText = "";
     bookings.forEach((booking) => {allBookingsText = allBookingsText + JSON.stringify(booking) + "\n\n"
     });
     allConversationsText = "";
     conversations.forEach((conversation) => {allConversationsText = allConversationsText + JSON.stringify(conversation) + "\n\n"
     });
-
+    allCustomersText = "";
+    customers.forEach((customer) => {allCustomersText = allCustomersText + JSON.stringify(customer) + "\n\n"
+    });
     const emailMessage = `Bookings: 
 ${allBookingsText}
 
 Conversations: 
 ${allConversationsText}
+
+Customers: 
+${allCustomersText}
 
 `;
 
@@ -315,6 +320,35 @@ ${allConversationsText}
     }
 }
 
+
+async function sendCustomerToAdmin(customer){
+
+    console.log("customer voor mail: ",JSON.stringify(customer));
+    customerText = `Phone nr: ${customer.phone_number}
+Language: ${customer.language}
+Name: ${customer.customer_name}`;
+
+    // Create a transporter object
+    const transporter = createTransport({
+        service: "gmail",
+        auth: {
+            user: process.env.GOOGLE_USER_EMAIL,
+            pass: process.env.GOOGLE_NODEMAILER_APP_PASSWORD
+        }
+    });
+    try {
+        const mailOptions = {
+            from: process.env.GOOGLE_USER_EMAIL,
+            to: process.env.GOOGLE_LIST_EMAIL,
+            subject: "New customer",
+            text: customerText,
+        }
+        await transporter.sendMail(mailOptions);
+    } catch (err) {
+        console.log("ERROR: ", err)
+    }
+}
+
 module.exports = {
     sendSummary,
     sendBookingToAdmin,
@@ -322,5 +356,6 @@ module.exports = {
     sendCanceledBookingToAdmin,
     sendCSToAdmin,
     sendStopToAdmin,
-    mailToAdmin
+    mailToAdmin,
+    sendCustomerToAdmin
 };

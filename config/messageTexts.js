@@ -227,7 +227,7 @@ with the correct id and without the quotes.`,
     adminCsDeletedMessage:
 `The CS conversation has been deleted successfully.`,
     adminMailMessage:
-`The conversations and bookings tables will be emailed.`
+`The conversations, bookings and customers tables will be emailed.`
 }
 
 

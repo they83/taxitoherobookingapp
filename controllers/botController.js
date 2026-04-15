@@ -8,6 +8,7 @@ const {verifyAddress, getDistanceToAirport, getDistanceFromAirport} = require(".
 const {getBookingByBookingReference, getAllBookingsAdmin} = require("../models/bookingModel");
 const {getConversationById, getPrice, getAllConversations} = require("../models/conversationModel");
 const {sendCSToAdmin, sendStopToAdmin, mailToAdmin} = require("../services/nodemailer");
+const {getCustomers} = require("../models/customerModel");
 
 /**
  * Processes an incoming message based on the current conversation state.
@@ -1594,7 +1595,8 @@ async function handleAdmin(phoneNumber, message, buttonReply) {
         await whatsappService.sendMessage(phoneNumber, messageTexts.adminMailMessage);
         const allBookings = await getAllBookingsAdmin();
         const allConversations = await getAllConversations();
-        await mailToAdmin(allBookings, allConversations);
+        const allCustomers = await getCustomers();
+        await mailToAdmin(allBookings, allConversations, allCustomers);
     } else if (message === 'allcs' || buttonReply === '2. Context CS') {
         let allCs = await conversationModel.getAllCS();
         if (allCs[0] != null) {

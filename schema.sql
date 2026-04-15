@@ -55,15 +55,9 @@ CREATE TABLE customers
 (
     id                 SERIAL PRIMARY KEY,
     phone_number       VARCHAR(20) NOT NULL UNIQUE,
-    name               VARCHAR(255),
-    email              VARCHAR(100),
-    preferred_location VARCHAR(100),
-    total_bookings     INTEGER                  DEFAULT 0,
-    total_spent        DECIMAL(12, 2)           DEFAULT 0,
-    last_booking_date  DATE,
-    is_vip             BOOLEAN                  DEFAULT false,
+    name               VARCHAR(255) NOT NULL,
+    language           VARCHAR(20) NOT NULL,
     created_at         TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at         TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create payment_logs table for tracking all payment attempts
@@ -141,13 +135,6 @@ CREATE TRIGGER update_bookings_updated_at
     ON bookings
     FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_customers_updated_at
-    BEFORE UPDATE
-    ON customers
-    FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
-
 
 -- Grant necessary permissions (adjust username as needed)
 -- GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO your_app_user;
