@@ -71,7 +71,7 @@ web_modules/
 #!.env
 
 # vars file
-vars.js
+config/vars.js
 
 
 # parcel-bundler cache (https://parceljs.org/)
