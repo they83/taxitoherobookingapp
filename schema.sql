@@ -57,7 +57,7 @@ CREATE TABLE customers
     phone_number       VARCHAR(20) NOT NULL UNIQUE,
     name               VARCHAR(255) NOT NULL,
     language           VARCHAR(20) NOT NULL,
-    created_at         TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_at         TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create payment_logs table for tracking all payment attempts
