@@ -65,8 +65,8 @@ async function createBooking(phoneNumber, context) {
     await client.query(sqlstring, [phoneNumber, context.date, context.time, context.passengers, context.info, context.distanceToAirport, context.durationToAirport, context.distanceFromAirport, context.durationFromAirport, context.address, context.selectedOption, context.language, context.name, context.price, context.alternativePhone, context.flightNr, context.luggage]);
     let booking = await getBookingByPhoneNumber(phoneNumber);
     await sendBookingToAdmin(booking);
-    const customer = await addCustomer(context, phoneNumber);
-    await sendCustomerToAdmin(customer);
+//    const customer = await addCustomer(context, phoneNumber);
+//    await sendCustomerToAdmin(customer);
     client.release();
     return JSON.stringify(booking.booking_reference) // Return the booking reference of the newly created booking
 }
