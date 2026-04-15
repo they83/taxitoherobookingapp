@@ -17,7 +17,9 @@ module.exports = {
     // PostgreSQL Database Credentials
     DB_HOST: process.env.DB_HOST || 'localhost',
     DB_USER: process.env.DB_USER || 'postgres',
+//    DB_USER: process.env.DB_USER || 'taxitohero',
     DB_PASS: process.env.DB_PASS || 'postgres',
+//    DB_PASS: process.env.DB_PASS || 'y5EU5MCmrVH2Xg',
     DB_NAME: process.env.DB_NAME || 'taxi_booking',
     DB_PORT: process.env.DB_PORT || 5432,
 

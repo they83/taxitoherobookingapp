@@ -82,7 +82,7 @@ async function addCustomer(context, phoneNumber) {
             return JSON.stringify(row) // Return the ID of the newly created customer
         } else {
             client.release();
-            return JSON.stringify(cus) // Return the ID of the existing customer
+            return JSON.stringify(customer) // Return the ID of the existing customer
         }
     }
 }
