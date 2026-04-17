@@ -6,7 +6,7 @@ const {parseBookingDetails, parseBookingDetailsForRebooking} = require('../utils
 const {messageTexts} = require("../config/messageTexts");
 const {verifyAddress, getDistanceToAirport, getDistanceFromAirport} = require("../services/googleMapsService");
 const {getBookingByBookingReference, getAllBookingsAdmin} = require("../models/bookingModel");
-const {getConversationById, getPrice, getAllConversations} = require("../models/conversationModel");
+const {getConversationById, getPrice, getAllConversations, getAllPrices} = require("../models/conversationModel");
 const {sendCSToAdmin, sendStopToAdmin, mailToAdmin} = require("../services/nodemailer");
 const {getCustomers} = require("../models/customerModel");
 
@@ -1596,7 +1596,8 @@ async function handleAdmin(phoneNumber, message, buttonReply) {
         const allBookings = await getAllBookingsAdmin();
         const allConversations = await getAllConversations();
         const allCustomers = await getCustomers();
-        await mailToAdmin(allBookings, allConversations, allCustomers);
+        const allPrices = await getAllPrices();
+        await mailToAdmin(allBookings, allConversations, allCustomers, allPrices);
     } else if (message === 'allcs' || buttonReply === '2. Context CS') {
         let allCs = await conversationModel.getAllCS();
         if (allCs[0] != null) {

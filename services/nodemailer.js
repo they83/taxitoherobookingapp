@@ -278,7 +278,7 @@ async function sendStopToAdmin(phoneNr, context){
     }
 }
 
-async function mailToAdmin(bookings, conversations, customers){
+async function mailToAdmin(bookings, conversations, customers, prices){
     allBookingsText = "";
     bookings.forEach((booking) => {allBookingsText = allBookingsText + JSON.stringify(booking) + "\n\n"
     });
@@ -288,6 +288,10 @@ async function mailToAdmin(bookings, conversations, customers){
     allCustomersText = "";
     customers.forEach((customer) => {allCustomersText = allCustomersText + JSON.stringify(customer) + "\n\n"
     });
+    allPricesText = "";
+    prices.forEach((price) => {allPricesText = allPricesText + JSON.stringify(price) + "\n\n"
+    });
+
     const emailMessage = `Bookings: 
 ${allBookingsText}
 
@@ -296,6 +300,9 @@ ${allConversationsText}
 
 Customers: 
 ${allCustomersText}
+
+Prices: 
+${allPricesText}
 
 `;
 

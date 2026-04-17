@@ -169,13 +169,31 @@ async function getPrice(toAirport, fromAirport, option) {
     let distanceToUse;
     if (option === 'From airport') {
         distanceToUse = Math.floor(fromAirport/1000);
+        console.log('distanceToUse from airport: ', distanceToUse);
     } else if (option === 'To airport') {
         distanceToUse = Math.floor(toAirport/1000);
+        console.log('distanceToUse to airport: ', distanceToUse);
     }
     const sqlstring = "select price from prices where distance = $1";
     let {rows} = await client.query(sqlstring, [distanceToUse]);
+    console.log('rows[0]', rows[0]);
+    console.log('rows', rows);
+    console.log('price', rows[0].price);
     client.release();
     return rows[0].price || null;
+}
+
+/**
+ * Gets all prices from the db.
+ * @returns {Object|null} The price if found, otherwise null.
+ */
+async function getAllPrices() {
+    const pool = getPool();
+    const client = await pool.connect();
+    const sqlstring = "select * from prices";
+    let {rows} = await client.query(sqlstring);
+    client.release();
+    return rows || null;
 }
 
 
@@ -192,5 +210,6 @@ module.exports = {
     getAllConversations,
     completeCsConversation,
     deleteCsConversation,
-    getPrice
+    getPrice,
+    getAllPrices
 };
