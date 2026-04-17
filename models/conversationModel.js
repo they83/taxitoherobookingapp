@@ -174,13 +174,14 @@ async function getPrice(toAirport, fromAirport, option) {
         distanceToUse = Math.floor(toAirport/1000);
         console.log('distanceToUse to airport: ', distanceToUse);
     }
-    const sqlstring = "select price from prices where distance = $1";
-    let {rows} = await client.query(sqlstring, [distanceToUse]);
-    console.log('rows[0]', rows[0]);
-    console.log('rows', rows);
-    console.log('price', rows[0].price);
-    client.release();
-    return rows[0].price || null;
+    if (distanceToUse < 601) {
+        const sqlstring = "select price from prices where distance = $1";
+        let {rows} = await client.query(sqlstring, [distanceToUse]);
+        client.release();
+        return rows[0].price || null;
+    } else {
+        return null;
+    }
 }
 
 /**
