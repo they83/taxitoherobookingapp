@@ -343,10 +343,16 @@ Do you want to continue or stop?`;
             if (context.selectedOption === 'To airport') {
                 newSelectedOption = 'From airport';
                 const price = await getPrice(context.distanceToAirport, context.distanceFromAirport, newSelectedOption);
-                const addressMessage = `You entered this address: 
+                let addressMessage = `You entered this address: 
 *${context.address}*
 Our price is ${price}€.
 Do you want to continue or stop?`;
+                if (price === null) {
+                    addressMessage = `You entered this address: 
+*${context.address}*
+We do not have a price as this distance is above 600km. We will contact you later. 
+Do you want to continue or stop?`;
+                }
                 await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Continue`, `2. Stop`);
                 // Store the entered address and transition to CHOOSING_PROCEED state
                 await conversationModel.updateConversationState(phoneNumber, STATES.CHOOSING_PROCEED_REBOOKING, {
@@ -364,10 +370,16 @@ Do you want to continue or stop?`;
             } else if (context.selectedOption === 'From airport') {
                 newSelectedOption = 'To airport';
                 const price = await getPrice(context.distanceToAirport, context.distanceFromAirport, newSelectedOption);
-                const addressMessage = `You entered this address: 
+                let addressMessage = `You entered this address: 
 *${context.address}*
 Our price is ${price}€.
 Do you want to continue or stop?`;
+                if (price === null) {
+                    addressMessage = `You entered this address: 
+*${context.address}*
+We do not have a price as this distance is above 600km. We will contact you later. 
+Do you want to continue or stop?`;
+                }
                 await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Continue`, `2. Stop`);
                 // Store the entered address and transition to CHOOSING_PROCEED state
                 await conversationModel.updateConversationState(phoneNumber, STATES.CHOOSING_PROCEED_REBOOKING, {
@@ -413,10 +425,16 @@ Voulez-vous continuer ou arrêter?`;
             if (context.selectedOption === 'To airport') {
                 newSelectedOption = 'From airport';
                 const price = await getPrice(context.distanceToAirport, context.distanceFromAirport, newSelectedOption);
-                const addressMessage = `Vous avez saisi l'adresse suivante: 
+                let addressMessage = `Vous avez saisi l'adresse suivante: 
 *${context.address}*
 Notre prix est ${price}€
 Voulez-vous continuer ou arrêter?`;
+                if (price === null) {
+                    addressMessage = `Vous avez saisi l'adresse suivante: 
+*${context.address}*
+Nous n'avons pas de prix pour le moment, la distance étant supérieure à 600 km. Nous vous contacterons ultérieurement. 
+Voulez-vous continuer ou arrêter?`;
+                }
                 await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Continuer`, `2. Arrêter`);
                 // Store the entered address and transition to CHOOSING_PROCEED state
                 await conversationModel.updateConversationState(phoneNumber, STATES.CHOOSING_PROCEED_REBOOKING, {
@@ -434,10 +452,16 @@ Voulez-vous continuer ou arrêter?`;
             } else if (context.selectedOption === 'From airport') {
                 newSelectedOption = 'To airport';
                 const price = await getPrice(context.distanceToAirport, context.distanceFromAirport, newSelectedOption);
-                const addressMessage = `Vous avez saisi l'adresse suivante: 
+                let addressMessage = `Vous avez saisi l'adresse suivante: 
 *${context.address}*
 Notre prix est ${price}€
 Voulez-vous continuer ou arrêter?`;
+                if (price === null) {
+                    addressMessage = `Vous avez saisi l'adresse suivante: 
+*${context.address}*
+Nous n'avons pas de prix pour le moment, la distance étant supérieure à 600 km. Nous vous contacterons ultérieurement. 
+Voulez-vous continuer ou arrêter?`;
+                }
                 await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Continuer`, `2. Arrêter`);
                 // Store the entered address and transition to CHOOSING_PROCEED state
                 await conversationModel.updateConversationState(phoneNumber, STATES.CHOOSING_PROCEED_REBOOKING, {
@@ -483,10 +507,16 @@ Wil u verdergaan of stoppen?`;
             if (context.selectedOption === 'To airport') {
                 newSelectedOption = 'From airport';
                 const price = await getPrice(context.distanceToAirport, context.distanceFromAirport, newSelectedOption);
-                const addressMessage = `U hebt dit adres opgegeven: 
+                let addressMessage = `U hebt dit adres opgegeven: 
 *${context.address}*
 Onze prijs is ${price}€
 Wil u verdergaan of stoppen?`;
+                if (price === null) {
+                    addressMessage = `U hebt dit adres opgegeven: 
+*${context.address}*
+We hebben geen prijs hiervoor omdat de afstand hoger is dan 600km. We contacteren u hiervoor later. 
+Wil u verdergaan of stoppen?`;
+                }
                 await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Verdergaan`, `2. Stoppen`);
                 // Store the entered address and transition to CHOOSING_PROCEED state
                 await conversationModel.updateConversationState(phoneNumber, STATES.CHOOSING_PROCEED_REBOOKING, {
@@ -504,10 +534,16 @@ Wil u verdergaan of stoppen?`;
             } else if (context.selectedOption === 'From airport') {
                 newSelectedOption = 'To airport';
                 const price = await getPrice(context.distanceToAirport, context.distanceFromAirport, newSelectedOption);
-                const addressMessage = `U hebt dit adres opgegeven: 
+                let addressMessage = `U hebt dit adres opgegeven: 
 *${context.address}*
 Onze prijs is ${price}€
 Wil u verdergaan of stoppen?`;
+                if (price === null) {
+                    addressMessage = `U hebt dit adres opgegeven: 
+*${context.address}*
+We hebben geen prijs hiervoor omdat de afstand hoger is dan 600km. We contacteren u hiervoor later. 
+Wil u verdergaan of stoppen?`;
+                }
                 await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Verdergaan`, `2. Stoppen`);
                 // Store the entered address and transition to CHOOSING_PROCEED state
                 await conversationModel.updateConversationState(phoneNumber, STATES.CHOOSING_PROCEED_REBOOKING, {
@@ -556,11 +592,16 @@ async function handleEnteringAddress(phoneNumber, message, buttonReply, context)
             await whatsappService.sendMessage(phoneNumber, messageTexts.addressErrorMessageEnglish);
         } else {
             const price = await getPrice(toAirport.distance, fromAirport.distance, context.selectedOption);
-            const addressMessage = `You entered this address: 
-*${message}*
-It was verified as: "${verifiedAddress.formattedAddress}
+            let addressMessage = `You entered this address: 
+*${context.address}*
 Our price is ${price}€.
 Do you want to continue or stop?`;
+            if (price === null) {
+                addressMessage = `You entered this address: 
+*${context.address}*
+We do not have a price as this distance is above 600km. We will contact you later. 
+Do you want to continue or stop?`;
+            }
             await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Continue`, `2. Stop`);
             // Store the entered address and transition to CHOOSING_PROCEED state
             await conversationModel.updateConversationState(phoneNumber, STATES.CHOOSING_PROCEED, {
@@ -584,11 +625,16 @@ Do you want to continue or stop?`;
             await whatsappService.sendMessage(phoneNumber, messageTexts.addressErrorMessageFrench);
         } else {
             const price = await getPrice(toAirport.distance, fromAirport.distance, context.selectedOption);
-            const addressMessage = `Vous avez saisi l'adresse suivante: 
-*${message}*
-Il a été vérifié comme: "${verifiedAddress.formattedAddress}
+            let addressMessage = `Vous avez saisi l'adresse suivante: 
+*${context.address}*
 Notre prix est ${price}€
 Voulez-vous continuer ou arrêter?`;
+            if (price === null) {
+                addressMessage = `Vous avez saisi l'adresse suivante: 
+*${context.address}*
+Nous n'avons pas de prix pour le moment, la distance étant supérieure à 600 km. Nous vous contacterons ultérieurement. 
+Voulez-vous continuer ou arrêter?`;
+            }
             await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Continuer`, `2. Arrêter`);
             // Store the entered address and transition to CHOOSING_PROCEED state
             await conversationModel.updateConversationState(phoneNumber, STATES.CHOOSING_PROCEED, {
@@ -612,11 +658,16 @@ Voulez-vous continuer ou arrêter?`;
             await whatsappService.sendMessage(phoneNumber, messageTexts.addressErrorMessageDutch);
         } else {
             const price = await getPrice(toAirport.distance, fromAirport.distance, context.selectedOption);
-            const addressMessage = `U hebt dit adres opgegeven: 
-*${message}*
-Het werd geverifieerd als: "${verifiedAddress.formattedAddress}
+            let addressMessage = `U hebt dit adres opgegeven: 
+*${context.address}*
 Onze prijs is ${price}€
 Wil u verdergaan of stoppen?`;
+            if (price === null) {
+                addressMessage = `U hebt dit adres opgegeven: 
+*${context.address}*
+We hebben geen prijs hiervoor omdat de afstand hoger is dan 600km. We contacteren u hiervoor later. 
+Wil u verdergaan of stoppen?`;
+            }
             await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Verdergaan`, `2. Stoppen`);
             // Store the entered address and transition to CHOOSING_PROCEED state
             await conversationModel.updateConversationState(phoneNumber, STATES.CHOOSING_PROCEED, {
