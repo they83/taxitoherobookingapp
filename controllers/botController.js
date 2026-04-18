@@ -6,9 +6,10 @@ const {parseBookingDetails, parseBookingDetailsForRebooking} = require('../utils
 const {messageTexts} = require("../config/messageTexts");
 const {verifyAddress, getDistanceToAirport, getDistanceFromAirport} = require("../services/googleMapsService");
 const {getBookingByBookingReference, getAllBookingsAdmin} = require("../models/bookingModel");
-const {getConversationById, getPrice, getAllConversations, getAllPrices} = require("../models/conversationModel");
+const {getConversationById, getAllConversations} = require("../models/conversationModel");
 const {sendCSToAdmin, sendStopToAdmin, mailToAdmin} = require("../services/nodemailer");
 const {getCustomers} = require("../models/customerModel");
+const {getPrice, getAllPrices} = require("../models/priceModel");
 
 /**
  * Processes an incoming message based on the current conversation state.

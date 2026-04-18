@@ -30,7 +30,7 @@ async function sendInteractiveMessageWithImage_3ReplyButtons(phoneNumber, messag
             messaging_product: 'whatsapp', to: phoneNumber, type: 'interactive', interactive: {
                 type: 'button', header: {
                     type: 'image', image: {
-                        id: '1000756592279034'
+                        id: process.env.IMAGE_ID
                     }
                 }, body: {
                     text: message
