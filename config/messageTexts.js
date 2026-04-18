@@ -227,7 +227,11 @@ with the correct id and without the quotes.`,
     adminCsDeletedMessage:
 `The CS conversation has been deleted successfully.`,
     adminMailMessage:
-`The conversations, bookings and customers tables will be emailed.`
+`The conversations, bookings, customers and prices tables will be emailed.`,
+    adminDeletePricesMessage:
+        `The prices table has been truncated.`,
+    adminAddPricesMessage:
+        `The prices have been added.`
 }
 
 

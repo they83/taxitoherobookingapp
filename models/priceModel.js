@@ -1,5 +1,6 @@
 // Database Operations for Conversation States
-const { getPool } = require('../config/db'); // Get the initialized postgresSQL connection pool
+const { getPool } = require('../config/db');
+const {priceInsert} = require("../config/prices"); // Get the initialized postgresSQL connection pool
 
 /**
  * Calculates a price using the distance, the context (from or to) and a price mapping in the database.
@@ -19,10 +20,10 @@ async function getPrice(toAirport, fromAirport, option) {
         distanceToUse = Math.floor(toAirport/1000);
         console.log('distanceToUse to airport: ', distanceToUse);
     }
-// TODO: adapt to correct number when all records are imported to the prices table (currently only 200 on live, only 600 on test)
+// TODO: adapt to correct number when all records are imported to the prices table (currently 800)
 // TODO: also adapt all 9 usages in botcontroller with a better text
 
-    if (distanceToUse < 601) {
+    if (distanceToUse < 801) {
         const sqlstring = "select price from prices where distance = $1";
         let {rows} = await client.query(sqlstring, [distanceToUse]);
         client.release();
@@ -31,7 +32,6 @@ async function getPrice(toAirport, fromAirport, option) {
         return null;
     }
 }
-
 
 /**
  * Gets all prices from the db.
@@ -46,7 +46,34 @@ async function getAllPrices() {
     return rows || null;
 }
 
+/**
+ * Gets all prices from the db.
+ * @returns {Object|null} The price if found, otherwise null.
+ */
+async function deleteAllPrices() {
+    const pool = getPool();
+    const client = await pool.connect();
+    const sqlstring = "truncate table prices";
+    let {rows} = await client.query(sqlstring);
+    client.release();
+    return rows || null;
+}
+
+/**
+ * Gets all prices from the db.
+ * @returns {Object|null} The price if found, otherwise null.
+ */
+async function addPrices() {
+    const pool = getPool();
+    const client = await pool.connect();
+    let {rows} = await client.query(priceInsert);
+    client.release();
+    return rows || null;
+}
+
 module.exports = {
     getPrice,
-    getAllPrices
+    getAllPrices,
+    deleteAllPrices,
+    addPrices
 };

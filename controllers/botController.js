@@ -9,7 +9,7 @@ const {getBookingByBookingReference, getAllBookingsAdmin} = require("../models/b
 const {getConversationById, getAllConversations} = require("../models/conversationModel");
 const {sendCSToAdmin, sendStopToAdmin, mailToAdmin} = require("../services/nodemailer");
 const {getCustomers} = require("../models/customerModel");
-const {getPrice, getAllPrices} = require("../models/priceModel");
+const {getPrice, getAllPrices, deleteAllPrices, addPrices} = require("../models/priceModel");
 
 /**
  * Processes an incoming message based on the current conversation state.
@@ -351,7 +351,7 @@ Do you want to continue or stop?`;
                 if (price === null) {
                     addressMessage = `You entered this address: 
 *${context.address}*
-We do not have a price as this distance is above 600km. We will contact you later. 
+We do not have a price as this distance is above 800km. We will contact you later. 
 Do you want to continue or stop?`;
                 }
                 await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Continue`, `2. Stop`);
@@ -378,7 +378,7 @@ Do you want to continue or stop?`;
                 if (price === null) {
                     addressMessage = `You entered this address: 
 *${context.address}*
-We do not have a price as this distance is above 600km. We will contact you later. 
+We do not have a price as this distance is above 800km. We will contact you later. 
 Do you want to continue or stop?`;
                 }
                 await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Continue`, `2. Stop`);
@@ -433,7 +433,7 @@ Voulez-vous continuer ou arrêter?`;
                 if (price === null) {
                     addressMessage = `Vous avez saisi l'adresse suivante: 
 *${context.address}*
-Nous n'avons pas de prix pour le moment, la distance étant supérieure à 600 km. Nous vous contacterons ultérieurement. 
+Nous n'avons pas de prix pour le moment, la distance étant supérieure à 800 km. Nous vous contacterons ultérieurement. 
 Voulez-vous continuer ou arrêter?`;
                 }
                 await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Continuer`, `2. Arrêter`);
@@ -460,7 +460,7 @@ Voulez-vous continuer ou arrêter?`;
                 if (price === null) {
                     addressMessage = `Vous avez saisi l'adresse suivante: 
 *${context.address}*
-Nous n'avons pas de prix pour le moment, la distance étant supérieure à 600 km. Nous vous contacterons ultérieurement. 
+Nous n'avons pas de prix pour le moment, la distance étant supérieure à 800 km. Nous vous contacterons ultérieurement. 
 Voulez-vous continuer ou arrêter?`;
                 }
                 await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Continuer`, `2. Arrêter`);
@@ -515,7 +515,7 @@ Wil u verdergaan of stoppen?`;
                 if (price === null) {
                     addressMessage = `U hebt dit adres opgegeven: 
 *${context.address}*
-We hebben geen prijs hiervoor omdat de afstand hoger is dan 600km. We contacteren u hiervoor later. 
+We hebben geen prijs hiervoor omdat de afstand hoger is dan 800km. We contacteren u hiervoor later. 
 Wil u verdergaan of stoppen?`;
                 }
                 await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Verdergaan`, `2. Stoppen`);
@@ -542,7 +542,7 @@ Wil u verdergaan of stoppen?`;
                 if (price === null) {
                     addressMessage = `U hebt dit adres opgegeven: 
 *${context.address}*
-We hebben geen prijs hiervoor omdat de afstand hoger is dan 600km. We contacteren u hiervoor later. 
+We hebben geen prijs hiervoor omdat de afstand hoger is dan 800km. We contacteren u hiervoor later. 
 Wil u verdergaan of stoppen?`;
                 }
                 await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Verdergaan`, `2. Stoppen`);
@@ -600,7 +600,7 @@ Do you want to continue or stop?`;
             if (price === null) {
                 addressMessage = `You entered this address: 
 *${context.address}*
-We do not have a price as this distance is above 600km. We will contact you later. 
+We do not have a price as this distance is above 800km. We will contact you later. 
 Do you want to continue or stop?`;
             }
             await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Continue`, `2. Stop`);
@@ -633,7 +633,7 @@ Voulez-vous continuer ou arrêter?`;
             if (price === null) {
                 addressMessage = `Vous avez saisi l'adresse suivante: 
 *${context.address}*
-Nous n'avons pas de prix pour le moment, la distance étant supérieure à 600 km. Nous vous contacterons ultérieurement. 
+Nous n'avons pas de prix pour le moment, la distance étant supérieure à 800 km. Nous vous contacterons ultérieurement. 
 Voulez-vous continuer ou arrêter?`;
             }
             await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Continuer`, `2. Arrêter`);
@@ -666,7 +666,7 @@ Wil u verdergaan of stoppen?`;
             if (price === null) {
                 addressMessage = `U hebt dit adres opgegeven: 
 *${context.address}*
-We hebben geen prijs hiervoor omdat de afstand hoger is dan 600km. We contacteren u hiervoor later. 
+We hebben geen prijs hiervoor omdat de afstand hoger is dan 800km. We contacteren u hiervoor later. 
 Wil u verdergaan of stoppen?`;
             }
             await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Verdergaan`, `2. Stoppen`);
@@ -1650,6 +1650,12 @@ async function handleAdmin(phoneNumber, message, buttonReply) {
         const allCustomers = await getCustomers();
         const allPrices = await getAllPrices();
         await mailToAdmin(allBookings, allConversations, allCustomers, allPrices);
+    } else if (message === 'deleteprices') {
+        await whatsappService.sendMessage(phoneNumber, messageTexts.adminDeletePricesMessage);
+        await deleteAllPrices();
+    } else if (message === 'insertprices') {
+        await whatsappService.sendMessage(phoneNumber, messageTexts.adminAddPricesMessage);
+        await addPrices();
     } else if (message === 'allcs' || buttonReply === '2. Context CS') {
         let allCs = await conversationModel.getAllCS();
         if (allCs[0] != null) {
