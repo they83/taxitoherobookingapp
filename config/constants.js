@@ -19,7 +19,7 @@ const STATES = {
     COMPLETED: 'completed'
 };
 
-const admins = ['32498179526', '32498179525', '32472430394', '32472430389'];
+const admins = ['32498179525', '32472430394', '32472430389'];
 
 const scheduledAdmins = ['32498179525'];
 

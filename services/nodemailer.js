@@ -318,7 +318,7 @@ ${allPricesText}
         const mailOptions = {
             from: process.env.GOOGLE_USER_EMAIL,
             to: process.env.GOOGLE_LIST_EMAIL,
-            subject: "Admin export bookings and conversations",
+            subject: "Admin export bookings, conversations, customers and prices",
             text: emailMessage,
         }
         await transporter.sendMail(mailOptions);
