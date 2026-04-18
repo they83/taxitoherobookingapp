@@ -174,6 +174,9 @@ async function getPrice(toAirport, fromAirport, option) {
         distanceToUse = Math.floor(toAirport/1000);
         console.log('distanceToUse to airport: ', distanceToUse);
     }
+// TODO: adapt to correct number when all records are imported to the prices table (currently only 200 on live, only 600 on test)
+// TODO: also adapt all 9 usages in botcontroller with a better text
+
     if (distanceToUse < 601) {
         const sqlstring = "select price from prices where distance = $1";
         let {rows} = await client.query(sqlstring, [distanceToUse]);

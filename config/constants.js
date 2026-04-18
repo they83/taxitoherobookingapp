@@ -19,6 +19,7 @@ const STATES = {
     COMPLETED: 'completed'
 };
 
+// TODO: add all needed phone numbers
 const admins = ['32498179525', '32472430394', '32472430389'];
 
 const scheduledAdmins = ['32498179525'];
