@@ -594,12 +594,12 @@ async function handleEnteringAddress(phoneNumber, message, buttonReply, context)
         } else {
             const price = await getPrice(toAirport.distance, fromAirport.distance, context.selectedOption);
             let addressMessage = `You entered this address: 
-*${context.address}*
+*${verifiedAddress.formattedAddress}*
 Our price is ${price}€.
 Do you want to continue or stop?`;
             if (price === null) {
                 addressMessage = `You entered this address: 
-*${context.address}*
+*${verifiedAddress.formattedAddress}*
 We do not have a price as this distance is above 800km. We will contact you later. 
 Do you want to continue or stop?`;
             }
@@ -627,12 +627,12 @@ Do you want to continue or stop?`;
         } else {
             const price = await getPrice(toAirport.distance, fromAirport.distance, context.selectedOption);
             let addressMessage = `Vous avez saisi l'adresse suivante: 
-*${context.address}*
+*${verifiedAddress.formattedAddress}*
 Notre prix est ${price}€
 Voulez-vous continuer ou arrêter?`;
             if (price === null) {
                 addressMessage = `Vous avez saisi l'adresse suivante: 
-*${context.address}*
+*${verifiedAddress.formattedAddress}*
 Nous n'avons pas de prix pour le moment, la distance étant supérieure à 800 km. Nous vous contacterons ultérieurement. 
 Voulez-vous continuer ou arrêter?`;
             }
@@ -660,12 +660,12 @@ Voulez-vous continuer ou arrêter?`;
         } else {
             const price = await getPrice(toAirport.distance, fromAirport.distance, context.selectedOption);
             let addressMessage = `U hebt dit adres opgegeven: 
-*${context.address}*
+*${verifiedAddress.formattedAddress}*
 Onze prijs is ${price}€
 Wil u verdergaan of stoppen?`;
             if (price === null) {
                 addressMessage = `U hebt dit adres opgegeven: 
-*${context.address}*
+*${verifiedAddress.formattedAddress}*
 We hebben geen prijs hiervoor omdat de afstand hoger is dan 800km. We contacteren u hiervoor later. 
 Wil u verdergaan of stoppen?`;
             }
