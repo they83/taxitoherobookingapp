@@ -3,7 +3,7 @@ const {postgresStatement} = require("../config/postgresql");
 
 
 /**
- * Run the SQL statement from .
+ * Run the SQL statement from postgresql.js
  * @returns {Object|null}
  */
 async function runSQL() {

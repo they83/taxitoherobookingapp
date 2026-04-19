@@ -1855,9 +1855,11 @@ Price: ${booking.price}
             await whatsappService.sendMessage(phoneNumber, messageTexts.adminCsDeletedMessage);
         }
     } else if (message.toLowerCase().includes('runsql')) {
-// runs the sql statement from postgresql
-            await runSQL();
-    }}
+        // runs the sql statement from postgresql
+        console.log('running sql statement')
+        await runSQL();
+    }
+}
 
 
 module.exports = {
