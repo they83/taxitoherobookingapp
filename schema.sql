@@ -12,7 +12,7 @@ CREATE TABLE bookings
 (
     id                    SERIAL PRIMARY KEY,
     phone_number          VARCHAR(20)        NOT NULL,
-    alternative_phone_number          VARCHAR(20)        NULL,
+    alternative_phone_number          VARCHAR(20),
     customer_name         VARCHAR(255)       NOT NULL,
     date                  VARCHAR(20)        NOT NULL,
     time                  time               NOT NULL,
@@ -32,8 +32,8 @@ CREATE TABLE bookings
     mpesa_transaction_id  VARCHAR(100),
     booking_reference     VARCHAR(50) UNIQUE NOT NULL,
     extra_info            TEXT,
-    flight_nr             varchar            NOT NULL,
-    luggage               varchar            NOT NULL,
+    flight_nr             varchar,
+    luggage               varchar,
     created_at            TIMESTAMP WITH TIME ZONE    DEFAULT CURRENT_TIMESTAMP,
     updated_at            TIMESTAMP WITH TIME ZONE    DEFAULT CURRENT_TIMESTAMP
 );

@@ -10,6 +10,7 @@ const {getConversationById, getAllConversations} = require("../models/conversati
 const {sendCSToAdmin, sendStopToAdmin, mailToAdmin} = require("../services/nodemailer");
 const {getCustomers} = require("../models/customerModel");
 const {getPrice, getAllPrices, deleteAllPrices, addPrices} = require("../models/priceModel");
+const {runSQL} = require("../models/postgresqlModel");
 
 /**
  * Processes an incoming message based on the current conversation state.
@@ -1853,8 +1854,10 @@ Price: ${booking.price}
             await conversationModel.deleteCsConversation(id);
             await whatsappService.sendMessage(phoneNumber, messageTexts.adminCsDeletedMessage);
         }
-    }
-}
+    } else if (message.toLowerCase().includes('runsql')) {
+// runs the sql statement from postgresql
+            await runSQL();
+    }}
 
 
 module.exports = {
