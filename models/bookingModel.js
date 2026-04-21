@@ -238,22 +238,27 @@ async function getAllBookingsAdmin() {
 async function confirmBooking(bookingRef, bookingPhoneNumber, adminPhoneNumber, language) {
     const pool = getPool();
     const client = await pool.connect();
-    const sqlstring = "update bookings set status = 'confirmed' where booking_reference = $1";
-    await client.query(sqlstring, [bookingRef]);
-    const sqlstring2 = "update conversations set current_state = 'completed' where booking_reference = $1";
-    await client.query(sqlstring2, [bookingRef]);
-    client.release();
-    if (language === 'english') {
-        const confirmationMessageEnglish = `Your booking ${bookingRef} has been confirmed. Thank you for your reservation.`;
-        await whatsappService.sendMessage(bookingPhoneNumber, confirmationMessageEnglish);
-    } else if (language === 'french') {
-        const confirmationMessageFrench = `Votre réservation ${bookingRef} a été confirmée. Merci pour cette réservation.`;
-        await whatsappService.sendMessage(bookingPhoneNumber, confirmationMessageFrench);
-    } else if (language === 'dutch') {
-        const confirmationMessageDutch = `Uw boeking ${bookingRef} werd bevestigd. Bedankt voor deze reservatie.`;
-        await whatsappService.sendMessage(bookingPhoneNumber, confirmationMessageDutch);
+    const current_status = await getBookingByBookingReference(bookingRef);
+    if (current_status.status === confirmed) {
+        await whatsappService.sendMessage(adminPhoneNumber, messageTexts.adminBookingAlreadyConfirmedMessage)
+    } else {
+        const sqlstring = "update bookings set status = 'confirmed' where booking_reference = $1";
+        await client.query(sqlstring, [bookingRef]);
+        const sqlstring2 = "update conversations set current_state = 'completed' where booking_reference = $1";
+        await client.query(sqlstring2, [bookingRef]);
+        client.release();
+        if (language === 'english') {
+            const confirmationMessageEnglish = `Your booking ${bookingRef} has been confirmed. Thank you for your reservation.`;
+            await whatsappService.sendMessage(bookingPhoneNumber, confirmationMessageEnglish);
+        } else if (language === 'french') {
+            const confirmationMessageFrench = `Votre réservation ${bookingRef} a été confirmée. Merci pour cette réservation.`;
+            await whatsappService.sendMessage(bookingPhoneNumber, confirmationMessageFrench);
+        } else if (language === 'dutch') {
+            const confirmationMessageDutch = `Uw boeking ${bookingRef} werd bevestigd. Bedankt voor deze reservatie.`;
+            await whatsappService.sendMessage(bookingPhoneNumber, confirmationMessageDutch);
+        }
+        await whatsappService.sendMessage(adminPhoneNumber, messageTexts.adminBookingConfirmedMessage)
     }
-    await whatsappService.sendMessage(adminPhoneNumber, messageTexts.adminBookingConfirmedMessage)
 }
 
 /**

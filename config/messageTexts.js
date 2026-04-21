@@ -210,6 +210,8 @@ with the correct booking reference and without the quotes.`,
 `This booking has been confirmed. The client has been notified.`,
     adminBookingConfirmedSilentMessage:
 `This booking has been confirmed. The client has NOT been notified.`,
+    adminBookingAlreadyConfirmedMessage:
+`This booking has already been confirmed. The client has NOT been notified.`,
     adminNoBookingFoundMessage:
 `This booking is not found. Please check the reference.`,
     adminCompleteMessage:
