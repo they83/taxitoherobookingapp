@@ -239,7 +239,7 @@ async function confirmBooking(bookingRef, bookingPhoneNumber, adminPhoneNumber, 
     const pool = getPool();
     const client = await pool.connect();
     const current_status = await getBookingByBookingReference(bookingRef);
-    if (current_status.status === confirmed) {
+    if (current_status.status === 'confirmed') {
         await whatsappService.sendMessage(adminPhoneNumber, messageTexts.adminBookingAlreadyConfirmedMessage)
     } else {
         const sqlstring = "update bookings set status = 'confirmed' where booking_reference = $1";
