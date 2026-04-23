@@ -627,7 +627,6 @@ Do you want to continue or stop?`;
             await whatsappService.sendMessage(phoneNumber, messageTexts.addressErrorMessageFrench);
         } else {
             const price = await getPrice(toAirport.distance, fromAirport.distance, context.selectedOption);
-            console.log(price);
             let addressMessage = `Vous avez saisi l'adresse suivante: 
 *${verifiedAddress.formattedAddress}*
 Notre prix est ${price}€
@@ -637,8 +636,12 @@ Voulez-vous continuer ou arrêter?`;
 *${verifiedAddress.formattedAddress}*
 Nous n'avons pas de prix pour le moment, la distance étant supérieure à 800 km. Nous vous contacterons ultérieurement. 
 Voulez-vous continuer ou arrêter?`;
+            } else if (price === 1) {
+                addressMessage = `Vous avez saisi l'adresse suivante: 
+*${verifiedAddress.formattedAddress}*
+La distance est très court. Nous vous contacterons ultérieurement. 
+Voulez-vous continuer ou arrêter?`;
             }
-            console.log(addressMessage);
             await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Continuer`, `2. Arrêter`);
             // Store the entered address and transition to CHOOSING_PROCEED state
             await conversationModel.updateConversationState(phoneNumber, STATES.CHOOSING_PROCEED, {

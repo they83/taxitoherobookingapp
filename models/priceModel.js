@@ -1,5 +1,5 @@
 // Database Operations for Conversation States
-const {getPool} = require('../config/db');
+const { getPool } = require('../config/db');
 const {priceInsert} = require("../config/prices"); // Get the initialized postgresSQL connection pool
 
 /**
@@ -14,27 +14,23 @@ async function getPrice(toAirport, fromAirport, option) {
     const client = await pool.connect();
     let distanceToUse;
     if (option === 'From airport') {
-        distanceToUse = Math.floor(fromAirport / 1000);
+        distanceToUse = Math.floor(fromAirport/1000);
         console.log('distanceToUse from airport: ', distanceToUse);
-        if (distanceToUse < 801) {
-            const sqlstring = "select price from prices where distance = $1";
-            let {rows} = await client.query(sqlstring, [distanceToUse]);
-            client.release();
-            return rows[0].price || null;
-        } else {
-            return null;
-        }
     } else if (option === 'To airport') {
-        distanceToUse = Math.floor(toAirport / 1000);
+        distanceToUse = Math.floor(toAirport/1000);
         console.log('distanceToUse to airport: ', distanceToUse);
-        if (distanceToUse < 801) {
-            const sqlstring = "select price from prices where distance = $1";
-            let {rows} = await client.query(sqlstring, [distanceToUse]);
-            client.release();
-            return rows[0].price || null;
-        } else {
-            return null;
-        }
+    }
+// TODO: adapt to correct number when all records are imported to the prices table (currently 800)
+// TODO: below 30 km has no price, but is not above 800km
+// TODO: also adapt all 9 usages in botcontroller with a better text
+
+    if (distanceToUse < 801 || distanceToUse > 29) {
+        const sqlstring = "select price from prices where distance = $1";
+        let {rows} = await client.query(sqlstring, [distanceToUse]);
+        client.release();
+        return rows[0].price || null;
+    } else {
+        return null;
     }
 }
 
@@ -77,5 +73,8 @@ async function addPrices() {
 }
 
 module.exports = {
-    getPrice, getAllPrices, deleteAllPrices, addPrices
+    getPrice,
+    getAllPrices,
+    deleteAllPrices,
+    addPrices
 };
