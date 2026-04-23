@@ -322,7 +322,7 @@ U kan dezelfde rit opnieuw boeken, boeken in de andere richting, of een nieuwe r
  */
 async function handleSelectingRebooking(phoneNumber, message, buttonReply, context) {
     if (context.language === 'english') {
-        if (buttonReply === '1') {
+        if (buttonReply === '1' || message === '1') {
             const addressMessage = `You entered this address: 
 *${context.address}*
 Our price is ${context.price}€.
@@ -341,7 +341,7 @@ Do you want to continue or stop?`;
                 rebooking: true,
                 name: context.name
             });
-        } else if (buttonReply === '2') {
+        } else if (buttonReply === '2'  || message === '2') {
             if (context.selectedOption === 'To airport') {
                 newSelectedOption = 'From airport';
                 const price = await getPrice(context.distanceToAirport, context.distanceFromAirport, newSelectedOption);
@@ -353,6 +353,11 @@ Do you want to continue or stop?`;
                     addressMessage = `You entered this address: 
 *${context.address}*
 We do not have a price as this distance is above 800km. We will contact you later. 
+Do you want to continue or stop?`;
+                } else if (price === 1) {
+                    addressMessage = `You have entered this address: 
+*${context.address}*
+This distance is very short. We will contact you later. 
 Do you want to continue or stop?`;
                 }
                 await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Continue`, `2. Stop`);
@@ -381,6 +386,11 @@ Do you want to continue or stop?`;
 *${context.address}*
 We do not have a price as this distance is above 800km. We will contact you later. 
 Do you want to continue or stop?`;
+                } else if (price === 1) {
+                    addressMessage = `You have entered this address: 
+*${context.address}*
+This distance is very short. We will contact you later. 
+Do you want to continue or stop?`;
                 }
                 await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Continue`, `2. Stop`);
                 // Store the entered address and transition to CHOOSING_PROCEED state
@@ -397,14 +407,14 @@ Do you want to continue or stop?`;
                     name: context.name
                 });
             }
-        } else if (buttonReply === '3') {
+        } else if (buttonReply === '3'  || message === '3') {
             await conversationModel.updateConversationState(phoneNumber, STATES.SELECTING_ARRIVAL_OR_DEPARTURE, {language: context.language})
             await whatsappService.sendInteractiveMessageWith3ReplyButtons(phoneNumber, messageTexts.selectionMessageShortEnglish, `1. From Zaventem 🛬`, `2. To Zaventem 🛫`, `3. CustomerService 💬`);
         } else {
             await whatsappService.sendMessage(phoneNumber, messageTexts.incorrectSelectionMessageEnglish);
         }
     } else if (context.language === 'french') {
-        if (buttonReply === '1') {
+        if (buttonReply === '1'  || message === '2') {
             const addressMessage = `Vous avez saisi l'adresse suivante: 
 *${context.address}*
 Notre prix est ${price}€
@@ -423,7 +433,7 @@ Voulez-vous continuer ou arrêter?`;
                 rebooking: true,
                 name: context.name
             });
-        } else if (buttonReply === '2') {
+        } else if (buttonReply === '2' || message === '2') {
             if (context.selectedOption === 'To airport') {
                 newSelectedOption = 'From airport';
                 const price = await getPrice(context.distanceToAirport, context.distanceFromAirport, newSelectedOption);
@@ -436,7 +446,12 @@ Voulez-vous continuer ou arrêter?`;
 *${context.address}*
 Nous n'avons pas de prix pour le moment, la distance étant supérieure à 800 km. Nous vous contacterons ultérieurement. 
 Voulez-vous continuer ou arrêter?`;
-                }
+            } else if (price === 1) {
+                addressMessage = `Vous avez saisi l'adresse suivante: 
+*${context.address}*
+La distance est très court. Nous vous contacterons ultérieurement. 
+Voulez-vous continuer ou arrêter?`;
+            }
                 await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Continuer`, `2. Arrêter`);
                 // Store the entered address and transition to CHOOSING_PROCEED state
                 await conversationModel.updateConversationState(phoneNumber, STATES.CHOOSING_PROCEED_REBOOKING, {
@@ -463,6 +478,12 @@ Voulez-vous continuer ou arrêter?`;
 *${context.address}*
 Nous n'avons pas de prix pour le moment, la distance étant supérieure à 800 km. Nous vous contacterons ultérieurement. 
 Voulez-vous continuer ou arrêter?`;
+
+            } else if (price === 1) {
+                    addressMessage = `Vous avez saisi l'adresse suivante: 
+*${context.address}*
+La distance est très court. Nous vous contacterons ultérieurement. 
+Voulez-vous continuer ou arrêter?`;
                 }
                 await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Continuer`, `2. Arrêter`);
                 // Store the entered address and transition to CHOOSING_PROCEED state
@@ -479,14 +500,14 @@ Voulez-vous continuer ou arrêter?`;
                     name: context.name
                 });
             }
-        } else if (buttonReply === '3') {
+        } else if (buttonReply === '3' || message === '3') {
             await conversationModel.updateConversationState(phoneNumber, STATES.SELECTING_ARRIVAL_OR_DEPARTURE, {language: context.language})
             await whatsappService.sendInteractiveMessageWith3ReplyButtons(phoneNumber, messageTexts.selectionMessageShortFrench, `1. De Zaventem 🛬`, `2. Vers Zaventem 🛫`, `3. Service client 💬`);
         } else {
             await whatsappService.sendMessage(phoneNumber, messageTexts.incorrectSelectionMessageFrench);
         }
     } else if (context.language === 'dutch') {
-        if (buttonReply === '1') {
+        if (buttonReply === '1' || message === '1') {
             const addressMessage = `U hebt dit adres opgegeven: 
 *${context.address}*
 Onze prijs is ${price}€
@@ -505,7 +526,7 @@ Wil u verdergaan of stoppen?`;
                 rebooking: true,
                 name: context.name
             });
-        } else if (buttonReply === '2') {
+        } else if (buttonReply === '2' || message === '2') {
             if (context.selectedOption === 'To airport') {
                 newSelectedOption = 'From airport';
                 const price = await getPrice(context.distanceToAirport, context.distanceFromAirport, newSelectedOption);
@@ -518,7 +539,12 @@ Wil u verdergaan of stoppen?`;
 *${context.address}*
 We hebben geen prijs hiervoor omdat de afstand hoger is dan 800km. We contacteren u hiervoor later. 
 Wil u verdergaan of stoppen?`;
-                }
+            } else if (price === 1) {
+                addressMessage = `U hebt dit adres opgegeven: 
+*${context.address}*
+Deze afstand is heel kort. We contacteren u hiervoor later. 
+Wil u verdergaan of stoppen?`;
+            }
                 await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Verdergaan`, `2. Stoppen`);
                 // Store the entered address and transition to CHOOSING_PROCEED state
                 await conversationModel.updateConversationState(phoneNumber, STATES.CHOOSING_PROCEED_REBOOKING, {
@@ -545,7 +571,12 @@ Wil u verdergaan of stoppen?`;
 *${context.address}*
 We hebben geen prijs hiervoor omdat de afstand hoger is dan 800km. We contacteren u hiervoor later. 
 Wil u verdergaan of stoppen?`;
-                }
+            } else if (price === 1) {
+                addressMessage = `U hebt dit adres opgegeven: 
+*${context.address}*
+Deze afstand is heel kort. We contacteren u hiervoor later. 
+Wil u verdergaan of stoppen?`;
+            }
                 await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Verdergaan`, `2. Stoppen`);
                 // Store the entered address and transition to CHOOSING_PROCEED state
                 await conversationModel.updateConversationState(phoneNumber, STATES.CHOOSING_PROCEED_REBOOKING, {
@@ -561,7 +592,7 @@ Wil u verdergaan of stoppen?`;
                     name: context.name
                 });
             }
-        } else if (buttonReply === '3') {
+        } else if (buttonReply === '3' || message === '3') {
             await conversationModel.updateConversationState(phoneNumber, STATES.SELECTING_ARRIVAL_OR_DEPARTURE, {language: context.language})
             await whatsappService.sendInteractiveMessageWith3ReplyButtons(phoneNumber, messageTexts.selectionMessageShortDutch, `1. Vanaf Zaventem 🛬`, `2. Naar Zaventem 🛫`, `3. CustomerService 💬`);
         } else {
@@ -602,6 +633,11 @@ Do you want to continue or stop?`;
                 addressMessage = `You entered this address: 
 *${verifiedAddress.formattedAddress}*
 We do not have a price as this distance is above 800km. We will contact you later. 
+Do you want to continue or stop?`;
+            } else if (price === 1) {
+                addressMessage = `You have entered this address: 
+*${verifiedAddress.formattedAddress}*
+This distance is very short. We will contact you later. 
 Do you want to continue or stop?`;
             }
             await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Continue`, `2. Stop`);
@@ -674,8 +710,13 @@ Wil u verdergaan of stoppen?`;
 *${verifiedAddress.formattedAddress}*
 We hebben geen prijs hiervoor omdat de afstand hoger is dan 800km. We contacteren u hiervoor later. 
 Wil u verdergaan of stoppen?`;
-            }
-            await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Verdergaan`, `2. Stoppen`);
+        } else if (price === 1) {
+            addressMessage = `U hebt dit adres opgegeven: 
+*${verifiedAddress.formattedAddress}*
+Deze afstand is heel kort. We contacteren u hiervoor later. 
+Wil u verdergaan of stoppen?`;
+        }
+        await whatsappService.sendInteractiveMessageWith2ReplyButtons(phoneNumber, addressMessage, `1. Verdergaan`, `2. Stoppen`);
             // Store the entered address and transition to CHOOSING_PROCEED state
             await conversationModel.updateConversationState(phoneNumber, STATES.CHOOSING_PROCEED, {
                 selectedOption: context.selectedOption,
